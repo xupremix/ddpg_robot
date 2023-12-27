@@ -1,0 +1,12 @@
+[package]
+name = "ddpg_robot"
+version = "0.0.1"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+robotics_lib = {version = "*", registry = "kellnr"}
+tch = {path = "../../tch-rs"}
+torch-sys = {path = "../../tch-rs/torch-sys"}
+worldgen_unwrap = {version = "*", registry = "kellnr"}
