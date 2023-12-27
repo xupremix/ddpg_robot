@@ -1,0 +1,39 @@
+use tch::{Device, Kind, Tensor};
+
+pub struct State {
+    pub action: i64,
+    pub reward: f64,
+    pub done: bool,
+    pub danger: [f64; 4],
+    pub coin_dir: [f64; 4],
+    pub bank_dir: [f64; 4],
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self {
+            action: -1,
+            reward: 0.0,
+            done: false,
+            danger: [0.0; 4],
+            coin_dir: [0.0; 4],
+            bank_dir: [0.0; 4],
+        }
+    }
+}
+
+impl State {
+    pub fn build(&self) -> Tensor {
+        Tensor::from_slice(
+            &self
+                .danger
+                .iter()
+                .chain(&self.bank_dir)
+                .chain(&self.coin_dir)
+                .copied()
+                .collect::<Vec<f64>>(),
+        )
+        .to_kind(Kind::Float)
+        .to(Device::cuda_if_available())
+    }
+}
