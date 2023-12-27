@@ -21,7 +21,7 @@ pub struct ReplayMemory {
 }
 
 impl ReplayMemory {
-    pub fn new(max_dim: usize, obs_space: usize, action_space: usize) -> Self {
+    pub fn new(max_dim: i64, obs_space: i64, action_space: i64) -> Self {
         let mode = if Cuda::is_available() {
             FLOAT_CUDA
         } else {
@@ -32,7 +32,7 @@ impl ReplayMemory {
             next_obs: Tensor::zeros([max_dim, obs_space], mode.clone()),
             rewards: Tensor::zeros([max_dim, 1], mode.clone()),
             actions: Tensor::zeros([max_dim, action_space], mode),
-            max_dim,
+            max_dim: max_dim as usize,
             len: 0,
             i: 0,
         }

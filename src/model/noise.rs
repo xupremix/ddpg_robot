@@ -8,7 +8,7 @@ struct Noise {
     mu: f64,
 }
 impl Noise {
-    fn new(theta: f64, sigma: f64, mu: f64, action_space: usize) -> Self {
+    fn new(theta: f64, sigma: f64, mu: f64, action_space: i64) -> Self {
         let mode = if Cuda::is_available() {
             FLOAT_CUDA
         } else {
