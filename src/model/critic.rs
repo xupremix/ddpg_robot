@@ -1,7 +1,7 @@
+use crate::model::actor::Actor;
 use crate::utils::consts::{ACTOR_MODEL_PATH, CRITIC_MODEL_PATH, HD_DIM, HD_DIM_2};
 use tch::nn::{linear, seq, Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
 use tch::{Device, Tensor};
-use crate::model::actor::Actor;
 
 pub struct Critic {
     vs: VarStore,
@@ -48,21 +48,9 @@ impl Critic {
         }
     }
 
-    pub fn load(observation_space: usize, action_space: usize, lr: f64) -> Self {
-        let mut critic = Critic::new(observation_space: usize, action_space: usize, lr: f64);
-        critic.vs.load(CRITIC_MODEL_PATH).unwrap();
-        critic
-    }
-
     pub fn forward(&self, obs: &Tensor, actions: &Tensor) -> Tensor {
         let xs = Tensor::cat(&[actions.copy(), obs.copy()], 1);
         xs.to_device(self.device).apply(&self.network)
-    }
-
-    pub fn save(&mut self) {
-        self.vs.freeze();
-        self.vs.save(CRITIC_MODEL_PATH).unwrap();
-        self.vs.unfreeze();
     }
 
     pub fn observation_space(&self) -> usize {

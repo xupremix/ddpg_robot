@@ -86,9 +86,9 @@ impl Agent {
             .forward(&states, &self.actor.forward(&states))
             .mean(Float);
 
-        self.actor.optimizer().zero_grad();
+        self.actor.optimizer_mut().zero_grad();
         actor_loss.backward();
-        self.actor.optimizer().step();
+        self.actor.optimizer_mut().step();
 
         update_vs(
             self.critic_target.var_store_mut(),
@@ -104,6 +104,5 @@ impl Agent {
 
     pub fn save(&mut self) {
         self.actor.save();
-        self.critic.save();
     }
 }

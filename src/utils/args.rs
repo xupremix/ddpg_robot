@@ -3,7 +3,10 @@ use clap::{Parser, Subcommand};
 #[derive(Subcommand, Clone)]
 pub enum Mode {
     Init,
-    Train,
+    Train {
+        #[arg(short, long, default_value = "100")]
+        episodes: usize,
+    },
     Eval,
 }
 

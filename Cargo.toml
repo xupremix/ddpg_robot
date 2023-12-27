@@ -11,3 +11,5 @@ tch = {path = "../../tch-rs"}
 torch-sys = {path = "../../tch-rs/torch-sys"}
 worldgen_unwrap = {version = "*", registry = "kellnr"}
 clap = { version = "4.4.11", features = ["derive"] }
+plotters = "0.3.5"
+rand = "0.7.3"

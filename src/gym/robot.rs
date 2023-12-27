@@ -1,4 +1,5 @@
 use crate::gym::state::State;
+use rand::{thread_rng, Rng};
 use robotics_lib::energy::Energy;
 use robotics_lib::event::events::Event;
 use robotics_lib::runner::backpack::BackPack;
@@ -24,7 +25,13 @@ impl GymRobot {
 
 impl Runnable for GymRobot {
     fn process_tick(&mut self, world: &mut World) {
-        todo!()
+        let reward = match self.state.borrow().action {
+            0 => 0.,
+            1 => 1.,
+            2 => -1.,
+            _ => 0.,
+        };
+        self.state.borrow_mut().reward = reward;
     }
 
     fn handle_event(&mut self, _event: Event) {

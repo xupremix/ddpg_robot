@@ -53,20 +53,13 @@ impl Actor {
         }
     }
 
-    pub fn load(observation_space: usize, action_space: usize, lr: f64) -> Self {
-        let mut actor = Actor::new(observation_space: usize, action_space: usize, lr: f64);
-        actor.vs.load(ACTOR_MODEL_PATH).unwrap();
-        actor
-    }
-
     pub fn forward(&self, obs: &Tensor) -> Tensor {
         obs.to_device(self.device).apply(&self.network)
     }
 
     pub fn save(&mut self) {
-        self.vs.freeze();
-        self.vs.save(ACTOR_MODEL_PATH).unwrap();
-        self.vs.unfreeze();
+        // TODO
+        // save via tracing
     }
 
     pub fn observation_space(&self) -> usize {

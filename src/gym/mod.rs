@@ -16,7 +16,7 @@ use worldgen_unwrap::public::WorldgeneratorUnwrap;
 ///
 /// - `actions_space`: shape of the output layer
 /// - `observation_space`: shape of the input layer
-pub struct Gym {
+pub struct GymEnv {
     action_space: i64,
     observation_space: Vec<i64>,
     generator: WorldgeneratorUnwrap,
@@ -43,7 +43,7 @@ impl Step {
     }
 }
 
-impl Gym {
+impl GymEnv {
     pub fn new(mut generator: WorldgeneratorUnwrap) -> Self {
         let state = Rc::new(RefCell::new(State::default()));
         let runner = Runner::new(Box::new(GymRobot::new(state.clone())), &mut generator).unwrap();
@@ -62,9 +62,12 @@ impl Gym {
         &self.observation_space
     }
     pub fn reset(&mut self) -> Tensor {
-        let state = Rc::new(RefCell::new(State::default()));
-        self.runner =
-            Runner::new(Box::new(GymRobot::new(state.clone())), &mut self.generator).unwrap();
+        *self.state.borrow_mut() = State::default();
+        self.runner = Runner::new(
+            Box::new(GymRobot::new(self.state.clone())),
+            &mut self.generator,
+        )
+        .unwrap();
         // let a tick pass to get the near data and init the danger map
         self.runner.game_tick().unwrap();
         self.state.borrow().build()
