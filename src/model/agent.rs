@@ -6,7 +6,7 @@ use crate::utils::functions::update_vs;
 use tch::Kind::Float;
 use tch::{no_grad, Tensor};
 
-struct Agent {
+pub struct Agent {
     actor: Actor,
     actor_target: Actor,
     critic: Critic,
@@ -23,7 +23,7 @@ impl Agent {
         actor: Actor,
         critic: Critic,
         noise: Noise,
-        replay_buffer_capacity: usize,
+        mem_dim: usize,
         train: bool,
         gamma: f64,
         tau: f64,
@@ -31,7 +31,7 @@ impl Agent {
         let actor_target = actor.clone();
         let critic_target = critic.clone();
         let replay_memory = ReplayMemory::new(
-            replay_buffer_capacity as i64,
+            mem_dim as i64,
             actor.observation_space() as i64,
             actor.action_space() as i64,
         );
@@ -100,5 +100,10 @@ impl Agent {
             self.actor.var_store(),
             self.tau,
         );
+    }
+
+    pub fn save(&mut self) {
+        self.actor.save();
+        self.critic.save();
     }
 }

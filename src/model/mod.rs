@@ -1,5 +1,5 @@
-mod actor;
-mod agent;
-mod critic;
+pub mod actor;
+pub mod agent;
+pub mod critic;
 mod memory;
-mod noise;
+pub mod noise;

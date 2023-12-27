@@ -10,3 +10,4 @@ robotics_lib = {version = "*", registry = "kellnr"}
 tch = {path = "../../tch-rs"}
 torch-sys = {path = "../../tch-rs/torch-sys"}
 worldgen_unwrap = {version = "*", registry = "kellnr"}
+clap = { version = "4.4.11", features = ["derive"] }

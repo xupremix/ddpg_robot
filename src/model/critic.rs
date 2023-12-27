@@ -1,12 +1,13 @@
-use crate::utils::consts::{HD_DIM, HD_DIM_2};
+use crate::utils::consts::{ACTOR_MODEL_PATH, CRITIC_MODEL_PATH, HD_DIM, HD_DIM_2};
 use tch::nn::{linear, seq, Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
 use tch::{Device, Tensor};
+use crate::model::actor::Actor;
 
 pub struct Critic {
     vs: VarStore,
     network: Sequential,
     device: Device,
-    obs_space: usize,
+    observation_space: usize,
     action_space: usize,
     optimizer: Optimizer,
     lr: f64,
@@ -14,14 +15,14 @@ pub struct Critic {
 
 impl Clone for Critic {
     fn clone(&self) -> Self {
-        let mut new = Self::new(self.obs_space, self.action_space, self.lr);
+        let mut new = Self::new(self.observation_space, self.action_space, self.lr);
         new.vs.copy(&self.vs).unwrap();
         new
     }
 }
 
 impl Critic {
-    pub fn new(obs_space: usize, action_space: usize, lr: f64) -> Self {
+    pub fn new(observation_space: usize, action_space: usize, lr: f64) -> Self {
         let device = Device::cuda_if_available();
         let vs = VarStore::new(device);
         let optimizer = Adam::default().build(&vs, lr).unwrap();
@@ -30,7 +31,7 @@ impl Critic {
             network: seq()
                 .add(linear(
                     p / "in",
-                    (obs_space + action_space) as i64,
+                    (observation_space + action_space) as i64,
                     HD_DIM,
                     Default::default(),
                 ))
@@ -40,11 +41,17 @@ impl Critic {
                 .add(linear(p / "out", HD_DIM_2, 1, Default::default())),
             device: p.device(),
             vs,
-            obs_space,
+            observation_space,
             action_space,
             optimizer,
             lr,
         }
+    }
+
+    pub fn load(observation_space: usize, action_space: usize, lr: f64) -> Self {
+        let mut critic = Critic::new(observation_space: usize, action_space: usize, lr: f64);
+        critic.vs.load(CRITIC_MODEL_PATH).unwrap();
+        critic
     }
 
     pub fn forward(&self, obs: &Tensor, actions: &Tensor) -> Tensor {
@@ -52,8 +59,14 @@ impl Critic {
         xs.to_device(self.device).apply(&self.network)
     }
 
+    pub fn save(&mut self) {
+        self.vs.freeze();
+        self.vs.save(CRITIC_MODEL_PATH).unwrap();
+        self.vs.unfreeze();
+    }
+
     pub fn observation_space(&self) -> usize {
-        self.obs_space
+        self.observation_space
     }
     pub fn action_space(&self) -> usize {
         self.action_space
