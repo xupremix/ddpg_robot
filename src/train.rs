@@ -43,38 +43,6 @@ pub fn train(mode: &Mode, episodes: usize) {
             let action = actions.softmax(-1, Float).argmax(-1, true).int64_value(&[]);
             // perform an action in the environment
             let step = env.step(action);
-            // acc_rw += step.reward;
-            // remember the reward, min and max for plotting
-            // ep_memory.push(acc_rw);
-            // if acc_rw < ep_min_rw {
-            //     ep_min_rw = acc_rw;
-            // }
-            // if acc_rw > ep_max_rw {
-            //     ep_max_rw = acc_rw;
-            // }
-            // store the transition into the replay memory
-            agent.remember(&obs, &actions, &step.reward.into(), &step.obs);
-            if step.done {
-                break;
-            }
-            // update the observation
-            obs = step.obs;
-        }
-
-        // perform backpropagation
-        for _ in 0..TRAINING_ITERATIONS {
-            agent.train(BATCH_SIZE);
-        }
-
-        obs = env.reset();
-        // perform an episode with the rollout data
-        for _ in 0..MAX_EPISODE_LEN {
-            // get an action given an observation
-            let actions = agent.actions(&obs);
-            // get the max action
-            let action = actions.softmax(-1, Float).argmax(-1, true).int64_value(&[]);
-            // perform an action in the environment
-            let step = env.step(action);
             acc_rw += step.reward;
             // remember the reward, min and max for plotting
             ep_memory.push(acc_rw);
@@ -85,15 +53,18 @@ pub fn train(mode: &Mode, episodes: usize) {
                 ep_max_rw = acc_rw;
             }
             // store the transition into the replay memory
-            // agent.remember(&obs, &actions, &step.reward.into(), &step.obs);
+            agent.remember(&obs, &actions, &step.reward.into(), &step.obs);
+            if i > BATCH_SIZE {
+                // perform backpropagation
+                agent.train(BATCH_SIZE);
+            }
             if step.done {
                 break;
             }
             // update the observation
             obs = step.obs;
         }
-
-        println!("Rollout Episode: {episode} with a total reward of {acc_rw:.4}");
+        println!("Episode: {episode} with a total reward of {acc_rw:.4}");
 
         // save if the episode is better than the previous best
         if acc_rw > best_acc_rw {

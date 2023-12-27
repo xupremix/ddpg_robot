@@ -1,6 +1,7 @@
 use crate::utils::consts::{ACTOR_MODEL_PATH, HD_DIM, HD_DIM_2};
+use tch::kind::{FLOAT_CPU, FLOAT_CUDA};
 use tch::nn::{linear, seq, Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
-use tch::{Device, Tensor};
+use tch::{CModule, Cuda, Device, Tensor};
 
 pub struct Actor {
     vs: VarStore,
@@ -58,8 +59,23 @@ impl Actor {
     }
 
     pub fn save(&mut self) {
-        // TODO
         // save via tracing
+        self.vs.freeze();
+        let mut forward_fn = |x: &[Tensor]| vec![self.forward(&x[0])];
+        let mode = if Cuda::is_available() {
+            FLOAT_CUDA
+        } else {
+            FLOAT_CPU
+        };
+        let cmodule = CModule::create_by_tracing(
+            "Actor",
+            "forward",
+            &[Tensor::zeros([self.observation_space as i64], mode)],
+            &mut forward_fn,
+        )
+        .unwrap();
+        cmodule.save(ACTOR_MODEL_PATH).unwrap();
+        self.vs.unfreeze();
     }
 
     pub fn observation_space(&self) -> usize {

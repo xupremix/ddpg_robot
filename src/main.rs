@@ -17,7 +17,7 @@ fn main() {
         match mode {
             Mode::Init => init(),
             Mode::Train { episodes } => train(&mode, episodes),
-            Mode::Eval => eval(),
+            Mode::Eval => eval(&mode),
         }
     } else {
         println!("No mode specified");
