@@ -37,7 +37,7 @@ impl ReplayMemory {
             i: 0,
         }
     }
-    fn push(&mut self, obs: &Tensor, actions: &Tensor, reward: &Tensor, next_obs: &Tensor) {
+    pub fn push(&mut self, obs: &Tensor, actions: &Tensor, reward: &Tensor, next_obs: &Tensor) {
         let i = (self.i % self.max_dim) as i64;
         self.obs.get(i).copy_(obs);
         self.rewards.get(i).copy_(reward);
@@ -49,7 +49,7 @@ impl ReplayMemory {
         }
     }
 
-    fn random_batch(&self, batch_size: usize) -> Option<(Tensor, Tensor, Tensor, Tensor)> {
+    pub fn random_batch(&self, batch_size: usize) -> Option<(Tensor, Tensor, Tensor, Tensor)> {
         if self.len < 3 {
             return None;
         }

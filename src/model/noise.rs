@@ -1,14 +1,14 @@
 use tch::kind::{FLOAT_CPU, FLOAT_CUDA};
 use tch::{Cuda, Tensor};
 
-struct Noise {
+pub struct Noise {
     state: Tensor,
     theta: f64,
     sigma: f64,
     mu: f64,
 }
 impl Noise {
-    fn new(theta: f64, sigma: f64, mu: f64, action_space: i64) -> Self {
+    pub fn new(theta: f64, sigma: f64, mu: f64, action_space: i64) -> Self {
         let mode = if Cuda::is_available() {
             FLOAT_CUDA
         } else {
@@ -23,7 +23,7 @@ impl Noise {
         }
     }
 
-    fn sample(&mut self) -> &Tensor {
+    pub fn sample(&mut self) -> &Tensor {
         let dx = self.theta * (self.mu - &self.state)
             + self.sigma * Tensor::randn(self.state.size(), FLOAT_CPU);
         self.state += dx;

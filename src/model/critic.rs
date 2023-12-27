@@ -21,7 +21,7 @@ impl Clone for Critic {
 }
 
 impl Critic {
-    fn new(obs_space: usize, action_space: usize, lr: f64) -> Self {
+    pub fn new(obs_space: usize, action_space: usize, lr: f64) -> Self {
         let device = Device::cuda_if_available();
         let vs = VarStore::new(device);
         let optimizer = Adam::default().build(&vs, lr).unwrap();
@@ -47,8 +47,27 @@ impl Critic {
         }
     }
 
-    fn forward(&self, obs: &Tensor, actions: &Tensor) -> Tensor {
+    pub fn forward(&self, obs: &Tensor, actions: &Tensor) -> Tensor {
         let xs = Tensor::cat(&[actions.copy(), obs.copy()], 1);
         xs.to_device(self.device).apply(&self.network)
+    }
+
+    pub fn observation_space(&self) -> usize {
+        self.obs_space
+    }
+    pub fn action_space(&self) -> usize {
+        self.action_space
+    }
+    pub fn optimizer_mut(&mut self) -> &mut Optimizer {
+        &mut self.optimizer
+    }
+    pub fn optimizer(&self) -> &Optimizer {
+        &self.optimizer
+    }
+    pub fn var_store(&self) -> &VarStore {
+        &self.vs
+    }
+    pub fn var_store_mut(&mut self) -> &mut VarStore {
+        &mut self.vs
     }
 }
