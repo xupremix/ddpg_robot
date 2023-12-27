@@ -26,10 +26,10 @@ impl GymRobot {
 impl Runnable for GymRobot {
     fn process_tick(&mut self, world: &mut World) {
         let reward = match self.state.borrow().action {
-            0 => 0.,
+            0 => -2.,
             1 => 1.,
             2 => -1.,
-            _ => 0.,
+            _ => -1.,
         };
         self.state.borrow_mut().reward = reward;
     }

@@ -32,7 +32,7 @@ pub fn eval(mode: &Mode) {
         if acc_rw > max_rw {
             max_rw = acc_rw;
         }
-        if i > MAX_EPISODE_LEN || step.done {
+        if i >= MAX_EPISODE_LEN || step.done {
             break;
         }
         obs = step.obs;

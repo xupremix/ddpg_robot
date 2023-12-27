@@ -1,6 +1,7 @@
 use crate::utils::consts::{ACTOR_MODEL_PATH, HD_DIM, HD_DIM_2};
 use tch::kind::{FLOAT_CPU, FLOAT_CUDA};
 use tch::nn::{linear, seq, Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
+use tch::Kind::Float;
 use tch::{CModule, Cuda, Device, Tensor};
 
 pub struct Actor {
@@ -43,8 +44,7 @@ impl Actor {
                     HD_DIM_2,
                     action_space as i64,
                     Default::default(),
-                ))
-                .add_fn(|xs| xs.tanh()),
+                )),
             device: p.device(),
             observation_space,
             action_space,
