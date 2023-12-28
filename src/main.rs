@@ -1,15 +1,16 @@
+use clap::Parser;
+use worldgen_unwrap::public::WorldgeneratorUnwrap;
+
+use eval::eval;
+use gym::GymEnv;
+use train::train;
+use utils::args::{Args, Mode};
+
 mod eval;
 mod gym;
 mod model;
 mod train;
 mod utils;
-
-use clap::Parser;
-use eval::eval;
-use gym::GymEnv;
-use train::train;
-use utils::args::{Args, Mode};
-use worldgen_unwrap::public::WorldgeneratorUnwrap;
 
 fn main() {
     let args = Args::parse();

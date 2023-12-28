@@ -1,3 +1,6 @@
+use tch::Kind::Float;
+use worldgen_unwrap::public::WorldgeneratorUnwrap;
+
 use crate::gym::GymEnv;
 use crate::model::actor::Actor;
 use crate::model::agent::Agent;
@@ -8,8 +11,6 @@ use crate::utils::consts::{
     BATCH_SIZE, GAMMA, LR_A, LR_C, MAP_PATH, MAX_EPISODE_LEN, MEM_DIM, MU, SIGMA, TAU, THETA,
 };
 use crate::utils::functions::plot;
-use tch::Kind::Float;
-use worldgen_unwrap::public::WorldgeneratorUnwrap;
 
 pub fn train(mode: &Mode, episodes: usize) {
     println!("Entering training mode");

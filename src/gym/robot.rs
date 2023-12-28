@@ -1,9 +1,6 @@
-use crate::gym::state::State;
-use crate::utils::consts::{
-    BASE_GO_REWARD, COINS_DESTROYED_GOAL, COINS_STORED_GOAL,
-    PERCENTAGE_ENERGY_RESERVED_FOR_SCANNING, REWARD_FOR_ILLEGAL_ACTION,
-};
-use crate::utils::functions::{scan_reward, update_closest, update_danger};
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use robotics_lib::energy::Energy;
 use robotics_lib::event::events::Event;
 use robotics_lib::interface::{destroy, go, one_direction_view, put, Direction};
@@ -12,8 +9,13 @@ use robotics_lib::runner::{Robot, Runnable};
 use robotics_lib::world::coordinates::Coordinate;
 use robotics_lib::world::tile::Content;
 use robotics_lib::world::World;
-use std::cell::RefCell;
-use std::rc::Rc;
+
+use crate::gym::state::State;
+use crate::utils::consts::{
+    BASE_GO_REWARD, COINS_DESTROYED_GOAL, COINS_STORED_GOAL,
+    PERCENTAGE_ENERGY_RESERVED_FOR_SCANNING, REWARD_FOR_ILLEGAL_ACTION,
+};
+use crate::utils::functions::{scan_reward, update_closest, update_danger};
 
 pub struct GymRobot {
     pub state: Rc<RefCell<State>>,

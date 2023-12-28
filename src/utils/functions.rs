@@ -1,10 +1,3 @@
-use crate::gym::robot::GymRobot;
-use crate::gym::state::State;
-use crate::utils::args::Mode;
-use crate::utils::consts::{
-    CONTENT_TARGETS, EVAL_PLOT_PATH, FONT_SIZE, LABEL_AREA_SIZE, PLOT_FONT, PLOT_HEIGHT,
-    PLOT_WIDTH, TRAIN_PLOT_PATH, X_LABELS, Y_LABELS,
-};
 use ghost_journey_journal::JourneyJournal;
 use plotters::prelude::{
     BitMapBackend, ChartBuilder, IntoDrawingArea, IntoFont, LineSeries, BLACK, WHITE,
@@ -14,9 +7,15 @@ use robotics_lib::runner::Runnable;
 use robotics_lib::utils::calculate_cost_go_with_environment;
 use robotics_lib::world::tile::{Content, Tile};
 use robotics_lib::world::World;
-use std::cell::RefMut;
 use tch::nn::VarStore;
 use tch::no_grad;
+
+use crate::gym::robot::GymRobot;
+use crate::utils::args::Mode;
+use crate::utils::consts::{
+    CONTENT_TARGETS, EVAL_PLOT_PATH, FONT_SIZE, LABEL_AREA_SIZE, PLOT_FONT, PLOT_HEIGHT,
+    PLOT_WIDTH, TRAIN_PLOT_PATH, X_LABELS, Y_LABELS,
+};
 
 // weighted sum of two trainable variables
 pub fn update_vs(dst: &mut VarStore, src: &VarStore, tau: f64) {

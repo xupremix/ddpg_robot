@@ -1,6 +1,7 @@
-use crate::utils::consts::{HD_DIM, HD_DIM_2};
 use tch::nn::{linear, seq, Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
 use tch::{Device, Tensor};
+
+use crate::utils::consts::{HD_DIM, HD_DIM_2};
 
 pub struct Critic {
     vs: VarStore,

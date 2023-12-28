@@ -1,10 +1,11 @@
+use tch::Kind::Float;
+use tch::{no_grad, Tensor};
+
 use crate::model::actor::Actor;
 use crate::model::critic::Critic;
 use crate::model::memory::ReplayMemory;
 use crate::model::noise::Noise;
 use crate::utils::functions::update_vs;
-use tch::Kind::Float;
-use tch::{no_grad, Tensor};
 
 pub struct Agent {
     actor: Actor,

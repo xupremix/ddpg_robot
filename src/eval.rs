@@ -1,9 +1,10 @@
+use tch::{CModule, Device};
+use worldgen_unwrap::public::WorldgeneratorUnwrap;
+
 use crate::gym::GymEnv;
 use crate::utils::args::Mode;
 use crate::utils::consts::{MAP_PATH, MAX_EPISODE_LEN, MODEL_PATH};
 use crate::utils::functions::plot;
-use tch::{CModule, Device};
-use worldgen_unwrap::public::WorldgeneratorUnwrap;
 
 pub fn eval(mode: &Mode) {
     let generator = WorldgeneratorUnwrap::init(false, Some(MAP_PATH.into()));

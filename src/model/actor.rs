@@ -1,7 +1,8 @@
-use crate::utils::consts::{HD_DIM, HD_DIM_2, MODEL_PATH};
 use tch::kind::{FLOAT_CPU, FLOAT_CUDA};
 use tch::nn::{linear, seq, Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
 use tch::{CModule, Cuda, Device, Tensor};
+
+use crate::utils::consts::{HD_DIM, HD_DIM_2, MODEL_PATH};
 
 pub struct Actor {
     vs: VarStore,

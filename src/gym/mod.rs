@@ -1,16 +1,17 @@
-pub mod robot;
-pub mod state;
-
-use crate::gym::robot::GymRobot;
-use crate::gym::state::State;
-use crate::utils::consts::{N_ACTIONS, N_OBSERVATIONS};
-use robotics_lib::runner::Runner;
 use std::cell::RefCell;
 use std::rc::Rc;
+
+use robotics_lib::runner::Runner;
 use tch::Tensor;
 use worldgen_unwrap::public::WorldgeneratorUnwrap;
 
+use crate::utils::consts::{N_ACTIONS, N_OBSERVATIONS};
+pub mod robot;
+pub mod state;
 // Implementation following the OpenAI Gym standard
+
+use robot::GymRobot;
+use state::State;
 
 /// # Gym environment
 ///
