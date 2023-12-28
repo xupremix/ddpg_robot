@@ -1,14 +1,11 @@
 use crate::gym::state::State;
-use crate::utils::consts::{CONTENT_TARGETS, TILETYPE_TARGETS};
 use crate::utils::functions::update_with_surroundings;
-use ghost_journey_journal::JourneyJournal;
 use robotics_lib::energy::Energy;
 use robotics_lib::event::events::Event;
 use robotics_lib::interface::robot_view;
 use robotics_lib::runner::backpack::BackPack;
 use robotics_lib::runner::{Robot, Runnable};
 use robotics_lib::world::coordinates::Coordinate;
-use robotics_lib::world::tile::Content;
 use robotics_lib::world::World;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -16,7 +13,6 @@ use std::rc::Rc;
 pub struct GymRobot {
     pub state: Rc<RefCell<State>>,
     pub robot: Robot,
-    pub journal: JourneyJournal,
     setup: bool,
 }
 
@@ -24,7 +20,6 @@ impl GymRobot {
     pub fn new(state: Rc<RefCell<State>>) -> Self {
         Self {
             robot: Robot::new(),
-            journal: JourneyJournal::new(&[], &CONTENT_TARGETS),
             setup: true,
             state,
         }

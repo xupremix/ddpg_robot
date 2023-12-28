@@ -90,9 +90,6 @@ impl Actor {
     pub fn optimizer_mut(&mut self) -> &mut Optimizer {
         &mut self.optimizer
     }
-    pub fn optimizer(&self) -> &Optimizer {
-        &self.optimizer
-    }
     pub fn var_store(&self) -> &VarStore {
         &self.vs
     }

@@ -31,18 +31,6 @@ pub struct Step {
     pub done: bool,
 }
 
-impl Step {
-    /// Copy the step with a new observation (Device is the same)
-    pub fn copy_with_obs(&self, obs: &Tensor) -> Self {
-        Self {
-            obs: obs.copy(),
-            action: self.action,
-            reward: self.reward,
-            done: self.done,
-        }
-    }
-}
-
 impl GymEnv {
     pub fn new(mut generator: WorldgeneratorUnwrap) -> Self {
         let state = Rc::new(RefCell::new(State::default()));

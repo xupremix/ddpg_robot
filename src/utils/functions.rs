@@ -1,9 +1,10 @@
 use crate::gym::robot::GymRobot;
 use crate::utils::args::Mode;
 use crate::utils::consts::{
-    EVAL_PLOT_PATH, FONT_SIZE, LABEL_AREA_SIZE, PLOT_FONT, PLOT_HEIGHT, PLOT_WIDTH,
-    TRAIN_PLOT_PATH, X_LABELS, Y_LABELS,
+    CONTENT_TARGETS, EVAL_PLOT_PATH, FONT_SIZE, LABEL_AREA_SIZE, PLOT_FONT, PLOT_HEIGHT,
+    PLOT_WIDTH, TRAIN_PLOT_PATH, X_LABELS, Y_LABELS,
 };
+use ghost_journey_journal::JourneyJournal;
 use plotters::prelude::{
     BitMapBackend, ChartBuilder, IntoDrawingArea, IntoFont, LineSeries, BLACK, WHITE,
 };
@@ -74,16 +75,15 @@ pub fn update_with_surroundings(
     world: &mut World,
 ) {
     // reset the state
-    let mut state = robot.state.borrow_mut();
-    state.reset();
+    robot.state.borrow_mut().reset();
+
+    let mut journal = JourneyJournal::new(&[], &CONTENT_TARGETS);
 
     // get the closest coin and bank
-    let closest_coin: Option<(usize, usize)> = robot
-        .journal
+    let closest_coin: Option<(usize, usize)> = journal
         .contents_closest_coords(&Content::Coin(0), robot, world)
         .unwrap();
-    let closest_bank: Option<(usize, usize)> = robot
-        .journal
+    let closest_bank: Option<(usize, usize)> = journal
         .contents_closest_coords(&Content::Bank(0..0), robot, world)
         .unwrap();
 
@@ -92,26 +92,26 @@ pub fn update_with_surroundings(
     let robot_j = robot.get_coordinate().get_col();
     if let Some((i, j)) = closest_coin {
         if i < robot_i {
-            state.coin_dir[0] = 1.0;
+            robot.state.borrow_mut().coin_dir[0] = 1.0;
         } else if i > robot_i {
-            state.coin_dir[2] = 1.0;
+            robot.state.borrow_mut().coin_dir[2] = 1.0;
         }
         if j < robot_j {
-            state.coin_dir[3] = 1.0;
+            robot.state.borrow_mut().coin_dir[3] = 1.0;
         } else if j > robot_j {
-            state.coin_dir[1] = 1.0;
+            robot.state.borrow_mut().coin_dir[1] = 1.0;
         }
     }
     if let Some((i, j)) = closest_bank {
         if i < robot_i {
-            state.bank_dir[0] = 1.0;
+            robot.state.borrow_mut().bank_dir[0] = 1.0;
         } else if i > robot_i {
-            state.bank_dir[2] = 1.0;
+            robot.state.borrow_mut().bank_dir[2] = 1.0;
         }
         if j < robot_j {
-            state.bank_dir[3] = 1.0;
+            robot.state.borrow_mut().bank_dir[3] = 1.0;
         } else if j > robot_j {
-            state.bank_dir[1] = 1.0;
+            robot.state.borrow_mut().bank_dir[1] = 1.0;
         }
     }
 

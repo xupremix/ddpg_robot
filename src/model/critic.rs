@@ -52,17 +52,8 @@ impl Critic {
         xs.to_device(self.device).apply(&self.network)
     }
 
-    pub fn observation_space(&self) -> usize {
-        self.observation_space
-    }
-    pub fn action_space(&self) -> usize {
-        self.action_space
-    }
     pub fn optimizer_mut(&mut self) -> &mut Optimizer {
         &mut self.optimizer
-    }
-    pub fn optimizer(&self) -> &Optimizer {
-        &self.optimizer
     }
     pub fn var_store(&self) -> &VarStore {
         &self.vs

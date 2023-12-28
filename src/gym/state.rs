@@ -1,4 +1,3 @@
-use clap::parser::ValueSource::DefaultValue;
 use tch::{Device, Kind, Tensor};
 
 pub struct State {
@@ -33,8 +32,10 @@ impl State {
             &self
                 .danger
                 .iter()
-                .chain(&self.bank_dir)
                 .chain(&self.coin_dir)
+                .chain(&self.bank_dir)
+                .chain(&self.coin_adj)
+                .chain(&self.bank_adj)
                 .copied()
                 .collect::<Vec<f64>>(),
         )

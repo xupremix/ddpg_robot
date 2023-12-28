@@ -1,7 +1,7 @@
-use robotics_lib::world::tile::{Content, TileType};
+use robotics_lib::world::tile::Content;
 
-pub const N_ACTIONS: i64 = 4;
-pub const N_OBSERVATIONS: i64 = 12;
+pub const N_ACTIONS: i64 = 16; // 17? stay still?
+pub const N_OBSERVATIONS: i64 = 20;
 pub const HD_DIM: i64 = 256;
 pub const HD_DIM_2: i64 = 128;
 pub const LR_A: f64 = 0.001;
