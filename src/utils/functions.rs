@@ -13,8 +13,8 @@ use tch::no_grad;
 use crate::gym::robot::GymRobot;
 use crate::utils::args::Mode;
 use crate::utils::consts::{
-    CONTENT_TARGETS, EVAL_PLOT_PATH, FONT_SIZE, LABEL_AREA_SIZE, PLOT_FONT, PLOT_HEIGHT,
-    PLOT_WIDTH, TRAIN_PLOT_PATH, X_LABELS, Y_LABELS,
+    COEFFICIENT_X_SCAN, CONTENT_TARGETS, EVAL_PLOT_PATH, FONT_SIZE, LABEL_AREA_SIZE, LIM_F_SCAN,
+    LOG_BASE_SCAN, PLOT_FONT, PLOT_HEIGHT, PLOT_WIDTH, TRAIN_PLOT_PATH, X_LABELS, Y_LABELS,
 };
 
 // weighted sum of two trainable variables
@@ -32,7 +32,7 @@ pub fn update_vs(dst: &mut VarStore, src: &VarStore, tau: f64) {
 
 pub fn plot(mode: &Mode, memory: Vec<f64>, min_rw: f64, max_rw: f64) {
     let path = match mode {
-        Mode::Init => println!("Cannot plot in init mode"),
+        Mode::Init => panic!("Cannot plot in init mode"),
         Mode::Train { .. } => TRAIN_PLOT_PATH.to_string(),
         Mode::Eval => EVAL_PLOT_PATH.to_string(),
     };
@@ -295,16 +295,14 @@ pub fn scan_reward(
             }
         }
     }
-    // TODO
-    0.
+    reward_fn(
+        (n_banks + n_coins) as f64,
+        COEFFICIENT_X_SCAN,
+        LOG_BASE_SCAN,
+        LIM_F_SCAN,
+    )
 }
 
-pub fn destroy_reward(amount: usize) -> f64 {
-    // TODO
-    0.
-}
-
-pub fn put_reward(amount: usize) -> f64 {
-    // TODO
-    0.
+pub fn reward_fn(x: f64, coeff_x: f64, log_base: f64, lim: f64) -> f64 {
+    ((coeff_x * x + 1.0).log(log_base) + lim * x) / -x
 }

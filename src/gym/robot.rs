@@ -1,6 +1,9 @@
-use std::cell::RefCell;
-use std::rc::Rc;
-
+use crate::gym::state::State;
+use crate::utils::consts::{
+    BASE_GO_REWARD, COEFFICIENT_X_COINS, COINS_DESTROYED_GOAL, COINS_STORED_GOAL, LIM_F_COINS,
+    LOG_BASE_COINS, PERCENTAGE_ENERGY_RESERVED_FOR_SCANNING, REWARD_FOR_ILLEGAL_ACTION,
+};
+use crate::utils::functions::{reward_fn, scan_reward, update_closest, update_danger};
 use robotics_lib::energy::Energy;
 use robotics_lib::event::events::Event;
 use robotics_lib::interface::{destroy, go, one_direction_view, put, Direction};
@@ -9,13 +12,8 @@ use robotics_lib::runner::{Robot, Runnable};
 use robotics_lib::world::coordinates::Coordinate;
 use robotics_lib::world::tile::Content;
 use robotics_lib::world::World;
-
-use crate::gym::state::State;
-use crate::utils::consts::{
-    BASE_GO_REWARD, COINS_DESTROYED_GOAL, COINS_STORED_GOAL,
-    PERCENTAGE_ENERGY_RESERVED_FOR_SCANNING, REWARD_FOR_ILLEGAL_ACTION,
-};
-use crate::utils::functions::{scan_reward, update_closest, update_danger};
+use std::cell::RefCell;
+use std::rc::Rc;
 
 pub struct GymRobot {
     pub state: Rc<RefCell<State>>,
@@ -54,7 +52,13 @@ impl GymRobot {
                 if let Ok((surroundings, _)) = go(self, world, dir) {
                     update_danger(self, world);
                     update_closest(self, world);
-                    BASE_GO_REWARD - surroundings[1][1].unwrap().tile_type.properties().cost()
+                    BASE_GO_REWARD
+                        - surroundings[1][1]
+                            .as_ref()
+                            .unwrap()
+                            .tile_type
+                            .properties()
+                            .cost() as f64
                 } else {
                     REWARD_FOR_ILLEGAL_ACTION
                 }
@@ -68,7 +72,12 @@ impl GymRobot {
                         self.state.borrow_mut().done = true;
                         0.
                     } else {
-                        destroy_reward(amount)
+                        reward_fn(
+                            amount as f64,
+                            COEFFICIENT_X_COINS,
+                            LOG_BASE_COINS,
+                            LIM_F_COINS,
+                        )
                     }
                 } else {
                     REWARD_FOR_ILLEGAL_ACTION
@@ -87,8 +96,15 @@ impl GymRobot {
                     if self.coins_stored >= COINS_STORED_GOAL {
                         self.state.borrow_mut().done = true;
                         0.
+                    } else if amount == 0 {
+                        REWARD_FOR_ILLEGAL_ACTION
                     } else {
-                        put_reward(amount)
+                        reward_fn(
+                            amount as f64,
+                            COEFFICIENT_X_COINS,
+                            LOG_BASE_COINS,
+                            LIM_F_COINS,
+                        )
                     }
                 } else {
                     REWARD_FOR_ILLEGAL_ACTION
@@ -102,7 +118,7 @@ impl GymRobot {
                 if distance < 2 {
                     REWARD_FOR_ILLEGAL_ACTION
                 } else {
-                    let Ok(rect) = one_direction_view(self, world, dir.clone(), distance);
+                    let rect = one_direction_view(self, world, dir.clone(), distance).unwrap();
                     update_closest(self, world);
                     scan_reward(self, rect, dir, world)
                 }
