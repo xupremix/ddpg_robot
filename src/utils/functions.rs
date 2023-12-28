@@ -14,7 +14,8 @@ use crate::gym::robot::GymRobot;
 use crate::utils::args::Mode;
 use crate::utils::consts::{
     COEFFICIENT_X_SCAN, CONTENT_TARGETS, EVAL_PLOT_PATH, FONT_SIZE, LABEL_AREA_SIZE, LIM_F_SCAN,
-    LOG_BASE_SCAN, PLOT_FONT, PLOT_HEIGHT, PLOT_WIDTH, TRAIN_PLOT_PATH, X_LABELS, Y_LABELS,
+    LOG_BASE_SCAN, PLOT_FONT, PLOT_HEIGHT, PLOT_WIDTH, RW_NO_SCAN, TRAIN_PLOT_PATH, X_LABELS,
+    Y_LABELS,
 };
 
 // weighted sum of two trainable variables
@@ -295,12 +296,12 @@ pub fn scan_reward(
             }
         }
     }
-    reward_fn(
-        (n_banks + n_coins) as f64,
-        COEFFICIENT_X_SCAN,
-        LOG_BASE_SCAN,
-        LIM_F_SCAN,
-    )
+    let x = n_banks + n_coins;
+    if x == 0 {
+        RW_NO_SCAN
+    } else {
+        reward_fn(x as f64, COEFFICIENT_X_SCAN, LOG_BASE_SCAN, LIM_F_SCAN)
+    }
 }
 
 pub fn reward_fn(x: f64, coeff_x: f64, log_base: f64, lim: f64) -> f64 {

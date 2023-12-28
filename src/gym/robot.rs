@@ -64,13 +64,15 @@ impl GymRobot {
                 }
             }
             1 => {
-                // destroy
                 if let Ok(amount) = destroy(self, world, dir) {
                     update_closest(self, world);
                     self.coins_destroyed += amount;
                     if self.coins_destroyed >= COINS_DESTROYED_GOAL {
+                        println!("Completed the task");
                         self.state.borrow_mut().done = true;
                         0.
+                    } else if amount == 0 {
+                        REWARD_FOR_ILLEGAL_ACTION
                     } else {
                         reward_fn(
                             amount as f64,
@@ -94,6 +96,7 @@ impl GymRobot {
                     update_closest(self, world);
                     self.coins_stored += amount;
                     if self.coins_stored >= COINS_STORED_GOAL {
+                        println!("Completed the task");
                         self.state.borrow_mut().done = true;
                         0.
                     } else if amount == 0 {
@@ -136,7 +139,8 @@ impl Runnable for GymRobot {
             self.setup = false;
             return;
         }
-        self.state.borrow_mut().reward = self.step(world);
+        let reward = self.step(world);
+        self.state.borrow_mut().reward = reward;
     }
 
     fn handle_event(&mut self, _event: Event) {

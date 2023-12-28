@@ -1,5 +1,6 @@
 use tch::{Device, Kind, Tensor};
 
+#[derive(Debug)]
 pub struct State {
     pub action: i64,
     pub reward: f64,
