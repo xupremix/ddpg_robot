@@ -8,8 +8,8 @@ edition = "2021"
 [dependencies]
 robotics_lib = {version = "*", registry = "kellnr"}
 worldgen_unwrap = {version = "*", registry = "kellnr"}
-ghost_journey_journal = { version="*", registry = "kellnr" }
-clap = { version = "4.4.11", features = ["derive"] }
+ghost_journey_journal = { version="0.1.1", registry = "kellnr" }
+clap = { version = "4.4.12", features = ["derive"] }
 plotters = "0.3.5"
 rand = "0.8.5"
 torch-sys = {path = "../../tch-rs/torch-sys"}

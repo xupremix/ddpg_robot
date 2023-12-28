@@ -8,7 +8,7 @@ use ghost_journey_journal::JourneyJournal;
 use plotters::prelude::{
     BitMapBackend, ChartBuilder, IntoDrawingArea, IntoFont, LineSeries, BLACK, WHITE,
 };
-use robotics_lib::interface::look_at_sky;
+use robotics_lib::interface::{look_at_sky, robot_view, Direction};
 use robotics_lib::runner::Runnable;
 use robotics_lib::utils::calculate_cost_go_with_environment;
 use robotics_lib::world::tile::{Content, Tile};
@@ -31,9 +31,7 @@ pub fn update_vs(dst: &mut VarStore, src: &VarStore, tau: f64) {
 
 pub fn plot(mode: &Mode, memory: Vec<f64>, min_rw: f64, max_rw: f64) {
     let path = match mode {
-        Mode::Init => {
-            panic!("Cannot plot in init mode")
-        }
+        Mode::Init => println!("Cannot plot in init mode"),
         Mode::Train { .. } => TRAIN_PLOT_PATH.to_string(),
         Mode::Eval => EVAL_PLOT_PATH.to_string(),
     };
@@ -69,15 +67,14 @@ pub fn plot(mode: &Mode, memory: Vec<f64>, min_rw: f64, max_rw: f64) {
         .unwrap();
 }
 
-pub fn update_with_surroundings(
-    robot: &mut GymRobot,
-    surroundings: Vec<Vec<Option<Tile>>>,
-    world: &mut World,
-) {
-    // reset the state
-    robot.state.borrow_mut().reset();
+pub fn update_closest(robot: &mut GymRobot, world: &mut World) {
+    // do a scan of the adj tiles
+    let _ = robot_view(robot, world);
+    // reset bank and coin adj
+    robot.state.borrow_mut().coin_adj = [0.0; 4];
+    robot.state.borrow_mut().bank_adj = [0.0; 4];
 
-    let mut journal = JourneyJournal::new(&[], &CONTENT_TARGETS);
+    let mut journal = JourneyJournal::new(&[], &CONTENT_TARGETS, false);
 
     // get the closest coin and bank
     let closest_coin: Option<(usize, usize)> = journal
@@ -90,31 +87,109 @@ pub fn update_with_surroundings(
     // update the coin and bank direction and adjacency
     let robot_i = robot.get_coordinate().get_row();
     let robot_j = robot.get_coordinate().get_col();
+
     if let Some((i, j)) = closest_coin {
-        if i < robot_i {
-            robot.state.borrow_mut().coin_dir[0] = 1.0;
-        } else if i > robot_i {
-            robot.state.borrow_mut().coin_dir[2] = 1.0;
+        match robot.closest_coin {
+            None => {
+                robot.closest_coin = Some((i, j));
+                robot.state.borrow_mut().coin_dir = [0.0; 4];
+                if i < robot_i {
+                    robot.state.borrow_mut().coin_dir[0] = 1.0;
+                } else if i > robot_i {
+                    robot.state.borrow_mut().coin_dir[2] = 1.0;
+                }
+                if j < robot_j {
+                    robot.state.borrow_mut().coin_dir[3] = 1.0;
+                } else if j > robot_j {
+                    robot.state.borrow_mut().coin_dir[1] = 1.0;
+                }
+            }
+            Some((curr_coin_i, curr_coin_j)) => {
+                let curr_dist = dist_from_robot(robot_i, robot_j, curr_coin_i, curr_coin_j);
+                let new_dist = dist_from_robot(robot_i, robot_j, i, j);
+                if new_dist < curr_dist {
+                    robot.closest_coin = Some((i, j));
+                    robot.state.borrow_mut().coin_dir = [0.0; 4];
+                    if i < robot_i {
+                        robot.state.borrow_mut().coin_dir[0] = 1.0;
+                    } else if i > robot_i {
+                        robot.state.borrow_mut().coin_dir[2] = 1.0;
+                    }
+                    if j < robot_j {
+                        robot.state.borrow_mut().coin_dir[3] = 1.0;
+                    } else if j > robot_j {
+                        robot.state.borrow_mut().coin_dir[1] = 1.0;
+                    }
+                }
+            }
         }
-        if j < robot_j {
-            robot.state.borrow_mut().coin_dir[3] = 1.0;
-        } else if j > robot_j {
-            robot.state.borrow_mut().coin_dir[1] = 1.0;
-        }
-    }
-    if let Some((i, j)) = closest_bank {
-        if i < robot_i {
-            robot.state.borrow_mut().bank_dir[0] = 1.0;
-        } else if i > robot_i {
-            robot.state.borrow_mut().bank_dir[2] = 1.0;
-        }
-        if j < robot_j {
-            robot.state.borrow_mut().bank_dir[3] = 1.0;
-        } else if j > robot_j {
-            robot.state.borrow_mut().bank_dir[1] = 1.0;
+        // update adjacency
+        let (i, j) = robot.closest_coin.unwrap();
+        if (robot_i as i32 - i as i32).abs() + (robot_j as i32 - j as i32).abs() == 1 {
+            match (robot_i as i32 - i as i32, robot_j as i32 - j as i32) {
+                (1, 0) => robot.state.borrow_mut().coin_adj[0] = 1.0,
+                (0, -1) => robot.state.borrow_mut().coin_adj[1] = 1.0,
+                (-1, 0) => robot.state.borrow_mut().coin_adj[2] = 1.0,
+                (0, 1) => robot.state.borrow_mut().coin_adj[3] = 1.0,
+                _ => {}
+            }
         }
     }
 
+    if let Some((i, j)) = closest_bank {
+        match robot.closest_bank {
+            None => {
+                robot.closest_bank = Some((i, j));
+                robot.state.borrow_mut().bank_dir = [0.0; 4];
+                if i < robot_i {
+                    robot.state.borrow_mut().bank_dir[0] = 1.0;
+                } else if i > robot_i {
+                    robot.state.borrow_mut().bank_dir[2] = 1.0;
+                }
+                if j < robot_j {
+                    robot.state.borrow_mut().bank_dir[3] = 1.0;
+                } else if j > robot_j {
+                    robot.state.borrow_mut().bank_dir[1] = 1.0;
+                }
+            }
+            Some((curr_bank_i, bank_j)) => {
+                let curr_dist = dist_from_robot(robot_i, robot_j, curr_bank_i, bank_j);
+                let new_dist = dist_from_robot(robot_i, robot_j, i, j);
+                if new_dist < curr_dist {
+                    robot.closest_bank = Some((i, j));
+                    robot.state.borrow_mut().bank_dir = [0.0; 4];
+                    if i < robot_i {
+                        robot.state.borrow_mut().bank_dir[0] = 1.0;
+                    } else if i > robot_i {
+                        robot.state.borrow_mut().bank_dir[2] = 1.0;
+                    }
+                    if j < robot_j {
+                        robot.state.borrow_mut().bank_dir[3] = 1.0;
+                    } else if j > robot_j {
+                        robot.state.borrow_mut().bank_dir[1] = 1.0;
+                    }
+                }
+            }
+        }
+        // update adjacency
+        let (i, j) = robot.closest_bank.unwrap();
+        if (robot_i as i32 - i as i32).abs() + (robot_j as i32 - j as i32).abs() == 1 {
+            match (robot_i as i32 - i as i32, robot_j as i32 - j as i32) {
+                (1, 0) => robot.state.borrow_mut().bank_adj[0] = 1.0,
+                (0, -1) => robot.state.borrow_mut().bank_adj[1] = 1.0,
+                (-1, 0) => robot.state.borrow_mut().bank_adj[2] = 1.0,
+                (0, 1) => robot.state.borrow_mut().bank_adj[3] = 1.0,
+                _ => {}
+            }
+        }
+    }
+}
+
+pub fn update_danger(robot: &mut GymRobot, world: &mut World) {
+    // adj tiles
+    let surroundings = robot_view(robot, world);
+    // reset the state
+    robot.state.borrow_mut().danger = [0.0; 4];
     // update the danger vec for borders and unwalkable tiles
     for (i, row) in surroundings.iter().enumerate() {
         for (j, tile) in row.iter().enumerate() {
@@ -128,25 +203,23 @@ pub fn update_with_surroundings(
                 // we have to check if that tile is walkable and the robot has enough energy for it
                 Some(tile) => {
                     let tiletype = &tile.tile_type;
-
                     // danger for non walkable tiles || cost is too high
-                    let mut base_cost = tiletype.properties().cost();
-                    let mut elevation_cost = 0;
                     let environmental_conditions = look_at_sky(world);
                     let new_elevation = tile.elevation;
                     let current_elevation = surroundings[1][1].as_ref().unwrap().elevation;
 
                     // Calculate cost
-                    base_cost = calculate_cost_go_with_environment(
-                        base_cost,
+                    let base_cost = calculate_cost_go_with_environment(
+                        tiletype.properties().cost(),
                         environmental_conditions,
                         tiletype.clone(),
                     );
                     // Consider elevation cost only if we are going from a lower tile to a higher tile
-                    if new_elevation > current_elevation {
-                        elevation_cost = (new_elevation - current_elevation).pow(2);
-                    }
-                    let cost = base_cost + elevation_cost;
+                    let cost = if new_elevation > current_elevation {
+                        base_cost + (new_elevation - current_elevation).pow(2)
+                    } else {
+                        base_cost
+                    };
                     if !tiletype.properties().walk() || robot.get_energy().get_energy_level() < cost
                     {
                         update_danger_adj(robot, i, j);
@@ -170,4 +243,121 @@ fn update_danger_adj(robot: &mut GymRobot, i: usize, j: usize) {
         (1, 0) => state.danger[3] = 1.0,
         _ => {}
     }
+}
+
+fn dist_from_robot(r_i: usize, r_j: usize, i: usize, j: usize) -> f64 {
+    ((r_i as f64 - i as f64).powi(2) + (r_j as f64 - j as f64).powi(2)).sqrt()
+}
+
+pub fn scan_reward(
+    robot: &mut GymRobot,
+    rect: Vec<Vec<Tile>>,
+    dir: Direction,
+    world: &mut World,
+) -> f64 {
+    let (mut n_coins, mut n_banks) = (0, 0);
+    let mut journal = JourneyJournal::new(&[], &CONTENT_TARGETS, false);
+
+    let coins = journal
+        .contents_list_coords(&Content::Coin(0), world)
+        .unwrap();
+    let banks = journal
+        .contents_list_coords(&Content::Bank(0..0), world)
+        .unwrap();
+
+    let robot_i = robot.get_coordinate().get_row() as i64;
+    let robot_j = robot.get_coordinate().get_col() as i64;
+
+    let row_len = rect.len();
+    for (i, row) in rect.iter().enumerate() {
+        let col_len = row.len();
+        for (j, tile) in row.iter().enumerate() {
+            match dir {
+                Direction::Up => {
+                    // i offset is -row_len + i - 1
+                    // j offset is -1
+                    let relative_i = -(row_len as i64) + i as i64 - 1;
+                    let relative_j = j as i64 - 1;
+                    let target_i = (robot_i + relative_i) as usize;
+                    let target_j = (robot_j + relative_j) as usize;
+                    if let Content::Coin(_) = tile.content {
+                        if !coins.contains(&(target_i, target_j)) {
+                            n_coins += 1;
+                        }
+                    }
+                    if let Content::Bank(_) = tile.content {
+                        if !banks.contains(&(target_i, target_j)) {
+                            n_banks += 1;
+                        }
+                    }
+                }
+                Direction::Right => {
+                    // i offset is -1
+                    // j offset is col_len - j + 1
+                    let relative_i = i as i64 - 1;
+                    let relative_j = col_len as i64 - j as i64 + 1;
+                    let target_i = (robot_i + relative_i) as usize;
+                    let target_j = (robot_j + relative_j) as usize;
+                    if let Content::Coin(_) = tile.content {
+                        if !coins.contains(&(target_i, target_j)) {
+                            n_coins += 1;
+                        }
+                    }
+                    if let Content::Bank(_) = tile.content {
+                        if !banks.contains(&(target_i, target_j)) {
+                            n_banks += 1;
+                        }
+                    }
+                }
+                Direction::Down => {
+                    // i offset is row_len - i + 1
+                    // j offset is -1
+                    let relative_i = row_len as i64 - i as i64 + 1;
+                    let relative_j = j as i64 - 1;
+                    let target_i = (robot_i + relative_i) as usize;
+                    let target_j = (robot_j + relative_j) as usize;
+                    if let Content::Coin(_) = tile.content {
+                        if !coins.contains(&(target_i, target_j)) {
+                            n_coins += 1;
+                        }
+                    }
+                    if let Content::Bank(_) = tile.content {
+                        if !banks.contains(&(target_i, target_j)) {
+                            n_banks += 1;
+                        }
+                    }
+                }
+                Direction::Left => {
+                    // i offset is -1
+                    // j offset is -row_len + j - 1
+                    let relative_i = i as i64 - 1;
+                    let relative_j = -(row_len as i64) + j as i64 - 1;
+                    let target_i = (robot_i + relative_i) as usize;
+                    let target_j = (robot_j + relative_j) as usize;
+                    if let Content::Coin(_) = tile.content {
+                        if !coins.contains(&(target_i, target_j)) {
+                            n_coins += 1;
+                        }
+                    }
+                    if let Content::Bank(_) = tile.content {
+                        if !banks.contains(&(target_i, target_j)) {
+                            n_banks += 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // TODO
+    0.
+}
+
+pub fn destroy_reward(amount: usize) -> f64 {
+    // TODO
+    0.
+}
+
+pub fn put_reward(amount: usize) -> f64 {
+    // TODO
+    0.
 }

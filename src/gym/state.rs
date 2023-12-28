@@ -42,13 +42,4 @@ impl State {
         .to_kind(Kind::Float)
         .to(Device::cuda_if_available())
     }
-
-    pub fn reset(&mut self) {
-        *self = Self {
-            action: self.action,
-            reward: self.reward,
-            done: self.done,
-            ..Default::default()
-        };
-    }
 }
