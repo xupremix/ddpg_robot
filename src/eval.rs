@@ -1,6 +1,6 @@
 use crate::gym::GymEnv;
 use crate::utils::args::Mode;
-use crate::utils::consts::{ACTOR_MODEL_PATH, MAP_PATH, MAX_EPISODE_LEN};
+use crate::utils::consts::{MAP_PATH, MAX_EPISODE_LEN, MODEL_PATH};
 use crate::utils::functions::plot;
 use tch::{CModule, Device};
 use worldgen_unwrap::public::WorldgeneratorUnwrap;
@@ -8,7 +8,7 @@ use worldgen_unwrap::public::WorldgeneratorUnwrap;
 pub fn eval(mode: &Mode) {
     let generator = WorldgeneratorUnwrap::init(false, Some(MAP_PATH.into()));
     let mut env = GymEnv::new(generator);
-    let mut model = CModule::load_on_device(ACTOR_MODEL_PATH, Device::cuda_if_available()).unwrap();
+    let mut model = CModule::load_on_device(MODEL_PATH, Device::cuda_if_available()).unwrap();
     model.set_eval();
     let mut memory = vec![];
     let mut min_rw = f64::MAX;

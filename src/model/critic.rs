@@ -1,5 +1,4 @@
-use crate::model::actor::Actor;
-use crate::utils::consts::{ACTOR_MODEL_PATH, CRITIC_MODEL_PATH, HD_DIM, HD_DIM_2};
+use crate::utils::consts::{HD_DIM, HD_DIM_2};
 use tch::nn::{linear, seq, Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
 use tch::{Device, Tensor};
 

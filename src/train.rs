@@ -6,7 +6,6 @@ use crate::model::noise::Noise;
 use crate::utils::args::Mode;
 use crate::utils::consts::{
     BATCH_SIZE, GAMMA, LR_A, LR_C, MAP_PATH, MAX_EPISODE_LEN, MEM_DIM, MU, SIGMA, TAU, THETA,
-    TRAINING_ITERATIONS,
 };
 use crate::utils::functions::plot;
 use tch::Kind::Float;
