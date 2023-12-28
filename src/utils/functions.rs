@@ -1,4 +1,5 @@
 use crate::gym::robot::GymRobot;
+use crate::gym::state::State;
 use crate::utils::args::Mode;
 use crate::utils::consts::{
     CONTENT_TARGETS, EVAL_PLOT_PATH, FONT_SIZE, LABEL_AREA_SIZE, PLOT_FONT, PLOT_HEIGHT,
@@ -13,6 +14,7 @@ use robotics_lib::runner::Runnable;
 use robotics_lib::utils::calculate_cost_go_with_environment;
 use robotics_lib::world::tile::{Content, Tile};
 use robotics_lib::world::World;
+use std::cell::RefMut;
 use tch::nn::VarStore;
 use tch::no_grad;
 
@@ -88,21 +90,40 @@ pub fn update_closest(robot: &mut GymRobot, world: &mut World) {
     let robot_i = robot.get_coordinate().get_row();
     let robot_j = robot.get_coordinate().get_col();
 
+    let update_coin_dir_fn =
+        |i: usize, robot_i: usize, j: usize, robot_j: usize, robot: &mut GymRobot| {
+            if i < robot_i {
+                robot.state.borrow_mut().coin_dir[0] = 1.0;
+            } else if i > robot_i {
+                robot.state.borrow_mut().coin_dir[2] = 1.0;
+            }
+            if j < robot_j {
+                robot.state.borrow_mut().coin_dir[3] = 1.0;
+            } else if j > robot_j {
+                robot.state.borrow_mut().coin_dir[1] = 1.0;
+            }
+        };
+
+    let update_bank_dir_fn =
+        |i: usize, robot_i: usize, j: usize, robot_j: usize, robot: &mut GymRobot| {
+            if i < robot_i {
+                robot.state.borrow_mut().bank_dir[0] = 1.0;
+            } else if i > robot_i {
+                robot.state.borrow_mut().bank_dir[2] = 1.0;
+            }
+            if j < robot_j {
+                robot.state.borrow_mut().bank_dir[3] = 1.0;
+            } else if j > robot_j {
+                robot.state.borrow_mut().bank_dir[1] = 1.0;
+            }
+        };
+
     if let Some((i, j)) = closest_coin {
         match robot.closest_coin {
             None => {
                 robot.closest_coin = Some((i, j));
                 robot.state.borrow_mut().coin_dir = [0.0; 4];
-                if i < robot_i {
-                    robot.state.borrow_mut().coin_dir[0] = 1.0;
-                } else if i > robot_i {
-                    robot.state.borrow_mut().coin_dir[2] = 1.0;
-                }
-                if j < robot_j {
-                    robot.state.borrow_mut().coin_dir[3] = 1.0;
-                } else if j > robot_j {
-                    robot.state.borrow_mut().coin_dir[1] = 1.0;
-                }
+                update_coin_dir_fn(i, robot_i, j, robot_j, robot);
             }
             Some((curr_coin_i, curr_coin_j)) => {
                 let curr_dist = dist_from_robot(robot_i, robot_j, curr_coin_i, curr_coin_j);
@@ -110,16 +131,7 @@ pub fn update_closest(robot: &mut GymRobot, world: &mut World) {
                 if new_dist < curr_dist {
                     robot.closest_coin = Some((i, j));
                     robot.state.borrow_mut().coin_dir = [0.0; 4];
-                    if i < robot_i {
-                        robot.state.borrow_mut().coin_dir[0] = 1.0;
-                    } else if i > robot_i {
-                        robot.state.borrow_mut().coin_dir[2] = 1.0;
-                    }
-                    if j < robot_j {
-                        robot.state.borrow_mut().coin_dir[3] = 1.0;
-                    } else if j > robot_j {
-                        robot.state.borrow_mut().coin_dir[1] = 1.0;
-                    }
+                    update_coin_dir_fn(i, robot_i, j, robot_j, robot);
                 }
             }
         }
@@ -141,16 +153,7 @@ pub fn update_closest(robot: &mut GymRobot, world: &mut World) {
             None => {
                 robot.closest_bank = Some((i, j));
                 robot.state.borrow_mut().bank_dir = [0.0; 4];
-                if i < robot_i {
-                    robot.state.borrow_mut().bank_dir[0] = 1.0;
-                } else if i > robot_i {
-                    robot.state.borrow_mut().bank_dir[2] = 1.0;
-                }
-                if j < robot_j {
-                    robot.state.borrow_mut().bank_dir[3] = 1.0;
-                } else if j > robot_j {
-                    robot.state.borrow_mut().bank_dir[1] = 1.0;
-                }
+                update_bank_dir_fn(i, robot_i, j, robot_j, robot);
             }
             Some((curr_bank_i, bank_j)) => {
                 let curr_dist = dist_from_robot(robot_i, robot_j, curr_bank_i, bank_j);
@@ -158,16 +161,7 @@ pub fn update_closest(robot: &mut GymRobot, world: &mut World) {
                 if new_dist < curr_dist {
                     robot.closest_bank = Some((i, j));
                     robot.state.borrow_mut().bank_dir = [0.0; 4];
-                    if i < robot_i {
-                        robot.state.borrow_mut().bank_dir[0] = 1.0;
-                    } else if i > robot_i {
-                        robot.state.borrow_mut().bank_dir[2] = 1.0;
-                    }
-                    if j < robot_j {
-                        robot.state.borrow_mut().bank_dir[3] = 1.0;
-                    } else if j > robot_j {
-                        robot.state.borrow_mut().bank_dir[1] = 1.0;
-                    }
+                    update_bank_dir_fn(i, robot_i, j, robot_j, robot);
                 }
             }
         }
@@ -268,82 +262,36 @@ pub fn scan_reward(
     let robot_i = robot.get_coordinate().get_row() as i64;
     let robot_j = robot.get_coordinate().get_col() as i64;
 
-    let row_len = rect.len();
+    let row_len = rect.len() as i64;
     for (i, row) in rect.iter().enumerate() {
-        let col_len = row.len();
+        let col_len = row.len() as i64;
         for (j, tile) in row.iter().enumerate() {
-            match dir {
-                Direction::Up => {
-                    // i offset is -row_len + i - 1
-                    // j offset is -1
-                    let relative_i = -(row_len as i64) + i as i64 - 1;
-                    let relative_j = j as i64 - 1;
-                    let target_i = (robot_i + relative_i) as usize;
-                    let target_j = (robot_j + relative_j) as usize;
-                    if let Content::Coin(_) = tile.content {
-                        if !coins.contains(&(target_i, target_j)) {
-                            n_coins += 1;
-                        }
-                    }
-                    if let Content::Bank(_) = tile.content {
-                        if !banks.contains(&(target_i, target_j)) {
-                            n_banks += 1;
-                        }
-                    }
+            let (relative_i, relative_j) = match dir {
+                // i offset is -row_len + i - 1
+                // j offset is -1
+                Direction::Up => (-row_len + i as i64 - 1, j as i64 - 1),
+                // i offset is -1
+                // j offset is col_len - j + 1
+                Direction::Right => (i as i64 - 1, col_len - j as i64 + 1),
+                // i offset is row_len - i + 1
+                // j offset is -1
+                Direction::Down => (row_len - i as i64 + 1, j as i64 - 1),
+                // i offset is -1
+                // j offset is -row_len + j - 1
+                Direction::Left => (i as i64 - 1, -row_len + j as i64 - 1),
+            };
+            let coord = (
+                (robot_i + relative_i) as usize,
+                (robot_j + relative_j) as usize,
+            );
+            if let Content::Coin(_) = tile.content {
+                if !coins.contains(&coord) {
+                    n_coins += 1;
                 }
-                Direction::Right => {
-                    // i offset is -1
-                    // j offset is col_len - j + 1
-                    let relative_i = i as i64 - 1;
-                    let relative_j = col_len as i64 - j as i64 + 1;
-                    let target_i = (robot_i + relative_i) as usize;
-                    let target_j = (robot_j + relative_j) as usize;
-                    if let Content::Coin(_) = tile.content {
-                        if !coins.contains(&(target_i, target_j)) {
-                            n_coins += 1;
-                        }
-                    }
-                    if let Content::Bank(_) = tile.content {
-                        if !banks.contains(&(target_i, target_j)) {
-                            n_banks += 1;
-                        }
-                    }
-                }
-                Direction::Down => {
-                    // i offset is row_len - i + 1
-                    // j offset is -1
-                    let relative_i = row_len as i64 - i as i64 + 1;
-                    let relative_j = j as i64 - 1;
-                    let target_i = (robot_i + relative_i) as usize;
-                    let target_j = (robot_j + relative_j) as usize;
-                    if let Content::Coin(_) = tile.content {
-                        if !coins.contains(&(target_i, target_j)) {
-                            n_coins += 1;
-                        }
-                    }
-                    if let Content::Bank(_) = tile.content {
-                        if !banks.contains(&(target_i, target_j)) {
-                            n_banks += 1;
-                        }
-                    }
-                }
-                Direction::Left => {
-                    // i offset is -1
-                    // j offset is -row_len + j - 1
-                    let relative_i = i as i64 - 1;
-                    let relative_j = -(row_len as i64) + j as i64 - 1;
-                    let target_i = (robot_i + relative_i) as usize;
-                    let target_j = (robot_j + relative_j) as usize;
-                    if let Content::Coin(_) = tile.content {
-                        if !coins.contains(&(target_i, target_j)) {
-                            n_coins += 1;
-                        }
-                    }
-                    if let Content::Bank(_) = tile.content {
-                        if !banks.contains(&(target_i, target_j)) {
-                            n_banks += 1;
-                        }
-                    }
+            }
+            if let Content::Bank(_) = tile.content {
+                if !banks.contains(&coord) {
+                    n_banks += 1;
                 }
             }
         }
