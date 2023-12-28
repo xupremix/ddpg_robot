@@ -1,5 +1,5 @@
-mod robot;
-mod state;
+pub mod robot;
+pub mod state;
 
 use crate::gym::robot::GymRobot;
 use crate::gym::state::State;
@@ -46,7 +46,10 @@ impl Step {
 impl GymEnv {
     pub fn new(mut generator: WorldgeneratorUnwrap) -> Self {
         let state = Rc::new(RefCell::new(State::default()));
-        let runner = Runner::new(Box::new(GymRobot::new(state.clone())), &mut generator).unwrap();
+        let mut runner =
+            Runner::new(Box::new(GymRobot::new(state.clone())), &mut generator).unwrap();
+        // let a tick pass to get the near data and init the danger map
+        runner.game_tick().unwrap();
         Self {
             action_space: N_ACTIONS,
             observation_space: vec![N_OBSERVATIONS],

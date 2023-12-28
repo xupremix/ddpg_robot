@@ -1,30 +1,51 @@
 use crate::gym::state::State;
-use rand::{thread_rng, Rng};
+use crate::utils::consts::{CONTENT_TARGETS, TILETYPE_TARGETS};
+use crate::utils::functions::update_with_surroundings;
+use ghost_journey_journal::JourneyJournal;
 use robotics_lib::energy::Energy;
 use robotics_lib::event::events::Event;
+use robotics_lib::interface::robot_view;
 use robotics_lib::runner::backpack::BackPack;
 use robotics_lib::runner::{Robot, Runnable};
 use robotics_lib::world::coordinates::Coordinate;
+use robotics_lib::world::tile::Content;
 use robotics_lib::world::World;
 use std::cell::RefCell;
 use std::rc::Rc;
 
 pub struct GymRobot {
-    state: Rc<RefCell<State>>,
-    robot: Robot,
+    pub state: Rc<RefCell<State>>,
+    pub robot: Robot,
+    pub journal: JourneyJournal,
+    setup: bool,
 }
 
 impl GymRobot {
     pub fn new(state: Rc<RefCell<State>>) -> Self {
         Self {
             robot: Robot::new(),
+            journal: JourneyJournal::new(&[], &CONTENT_TARGETS),
+            setup: true,
             state,
         }
+    }
+
+    pub fn setup(&mut self, world: &mut World) {
+        // update the near danger + coin + bank on 3x3 surroundings
+        let surr = robot_view(self, world);
+        update_with_surroundings(self, surr, world);
     }
 }
 
 impl Runnable for GymRobot {
     fn process_tick(&mut self, world: &mut World) {
+        // setup the state if it's the first game tick
+        if self.setup {
+            self.setup(world);
+            self.setup = false;
+            return;
+        }
+        // otherwise alternate between robot movement and manual action
         let reward = match self.state.borrow().action {
             0 => -2.,
             1 => 1.,

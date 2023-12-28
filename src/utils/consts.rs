@@ -1,3 +1,5 @@
+use robotics_lib::world::tile::{Content, TileType};
+
 pub const N_ACTIONS: i64 = 4;
 pub const N_OBSERVATIONS: i64 = 12;
 pub const HD_DIM: i64 = 256;
@@ -23,3 +25,4 @@ pub const FONT_SIZE: u32 = 20;
 pub const LABEL_AREA_SIZE: u32 = 40;
 pub const X_LABELS: usize = 20;
 pub const Y_LABELS: usize = 30;
+pub const CONTENT_TARGETS: [Content; 2] = [Content::Coin(0), Content::Bank(0..0)];

@@ -1,3 +1,4 @@
+use clap::parser::ValueSource::DefaultValue;
 use tch::{Device, Kind, Tensor};
 
 pub struct State {
@@ -7,6 +8,8 @@ pub struct State {
     pub danger: [f64; 4],
     pub coin_dir: [f64; 4],
     pub bank_dir: [f64; 4],
+    pub coin_adj: [f64; 4],
+    pub bank_adj: [f64; 4],
 }
 
 impl Default for State {
@@ -18,6 +21,8 @@ impl Default for State {
             danger: [0.0; 4],
             coin_dir: [0.0; 4],
             bank_dir: [0.0; 4],
+            coin_adj: [0.0; 4],
+            bank_adj: [0.0; 4],
         }
     }
 }
@@ -35,5 +40,14 @@ impl State {
         )
         .to_kind(Kind::Float)
         .to(Device::cuda_if_available())
+    }
+
+    pub fn reset(&mut self) {
+        *self = Self {
+            action: self.action,
+            reward: self.reward,
+            done: self.done,
+            ..Default::default()
+        };
     }
 }
