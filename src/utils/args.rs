@@ -6,8 +6,13 @@ pub enum Mode {
     Train {
         #[arg(short, long, default_value = "100")]
         episodes: usize,
+        #[arg(short, long, default_value = "200")]
+        max_ep_len: usize,
     },
-    Eval,
+    Eval {
+        #[arg(short, long, default_value = "200")]
+        max_ep_len: usize,
+    },
 }
 
 #[derive(Parser)]

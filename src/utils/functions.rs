@@ -35,7 +35,7 @@ pub fn plot(mode: &Mode, memory: Vec<f64>, min_rw: f64, max_rw: f64) {
     let path = match mode {
         Mode::Init => panic!("Cannot plot in init mode"),
         Mode::Train { .. } => TRAIN_PLOT_PATH.to_string(),
-        Mode::Eval => EVAL_PLOT_PATH.to_string(),
+        Mode::Eval { .. } => EVAL_PLOT_PATH.to_string(),
     };
     // plot background
     let root = BitMapBackend::new(&path, (PLOT_WIDTH, PLOT_HEIGHT)).into_drawing_area();
@@ -262,23 +262,13 @@ pub fn scan_reward(
     let robot_i = robot.get_coordinate().get_row() as i64;
     let robot_j = robot.get_coordinate().get_col() as i64;
 
-    let row_len = rect.len() as i64;
     for (i, row) in rect.iter().enumerate() {
-        let col_len = row.len() as i64;
         for (j, tile) in row.iter().enumerate() {
             let (relative_i, relative_j) = match dir {
-                // i offset is -row_len + i - 1
-                // j offset is -1
-                Direction::Up => (-row_len + i as i64 - 1, j as i64 - 1),
-                // i offset is -1
-                // j offset is col_len - j + 1
-                Direction::Right => (i as i64 - 1, col_len - j as i64 + 1),
-                // i offset is row_len - i + 1
-                // j offset is -1
-                Direction::Down => (row_len - i as i64 + 1, j as i64 - 1),
-                // i offset is -1
-                // j offset is -row_len + j - 1
-                Direction::Left => (i as i64 - 1, -row_len + j as i64 - 1),
+                Direction::Up => (-(i as i64) - 1, j as i64 - 1),
+                Direction::Right => (i as i64 - 1, j as i64 + 1),
+                Direction::Down => (i as i64 + 1, j as i64 - 1),
+                Direction::Left => (i as i64 - 1, -(j as i64) - 1),
             };
             let coord = (
                 (robot_i + relative_i) as usize,

@@ -68,7 +68,7 @@ impl GymRobot {
                     update_closest(self, world);
                     self.coins_destroyed += amount;
                     if self.coins_destroyed >= COINS_DESTROYED_GOAL {
-                        println!("Completed the task");
+                        println!("Completed the coins destroyed task");
                         self.state.borrow_mut().done = true;
                         0.
                     } else if amount == 0 {
@@ -96,7 +96,7 @@ impl GymRobot {
                     update_closest(self, world);
                     self.coins_stored += amount;
                     if self.coins_stored >= COINS_STORED_GOAL {
-                        println!("Completed the task");
+                        println!("Completed the coins stored task");
                         self.state.borrow_mut().done = true;
                         0.
                     } else if amount == 0 {

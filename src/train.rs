@@ -8,11 +8,11 @@ use crate::model::critic::Critic;
 use crate::model::noise::Noise;
 use crate::utils::args::Mode;
 use crate::utils::consts::{
-    BATCH_SIZE, GAMMA, LR_A, LR_C, MAP_PATH, MAX_EPISODE_LEN, MEM_DIM, MU, SIGMA, TAU, THETA,
+    BATCH_SIZE, GAMMA, LR_A, LR_C, MAP_PATH, MEM_DIM, MU, SIGMA, TAU, THETA,
 };
 use crate::utils::functions::plot;
 
-pub fn train(mode: &Mode, episodes: usize) {
+pub fn train(mode: &Mode, episodes: usize, max_ep_len: usize) {
     println!("Entering training mode");
     let generator = WorldgeneratorUnwrap::init(false, Some(MAP_PATH.into()));
     let mut env = GymEnv::new(generator);
@@ -36,7 +36,7 @@ pub fn train(mode: &Mode, episodes: usize) {
         let mut ep_max_rw = f64::MIN;
         let mut ep_memory = vec![];
 
-        for i in 0..MAX_EPISODE_LEN {
+        for i in 0..max_ep_len {
             // get an action given an observation
             let actions = agent.actions(&obs);
             // get the max action

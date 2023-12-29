@@ -5,12 +5,10 @@ use worldgen_unwrap::public::WorldgeneratorUnwrap;
 
 use crate::gym::GymEnv;
 use crate::utils::args::Mode;
-use crate::utils::consts::{
-    EVAL_LOG_PATH, EVAL_STATE_LOG_PATH, MAP_PATH, MAX_EPISODE_LEN, MODEL_PATH,
-};
+use crate::utils::consts::{EVAL_LOG_PATH, EVAL_STATE_LOG_PATH, MAP_PATH, MODEL_PATH};
 use crate::utils::functions::plot;
 
-pub fn eval(mode: &Mode) {
+pub fn eval(mode: &Mode, max_ep_len: usize) {
     let generator = WorldgeneratorUnwrap::init(false, Some(MAP_PATH.into()));
     let mut env = GymEnv::new(generator);
     let mut model = CModule::load_on_device(MODEL_PATH, Device::cuda_if_available()).unwrap();
@@ -63,7 +61,7 @@ pub fn eval(mode: &Mode) {
         if acc_rw > max_rw {
             max_rw = acc_rw;
         }
-        if i >= MAX_EPISODE_LEN || step.done {
+        if i >= max_ep_len || step.done {
             break;
         }
         obs = step.obs;
