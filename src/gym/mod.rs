@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::cell::{Ref, RefCell};
 use std::rc::Rc;
 
 use robotics_lib::runner::Runner;
@@ -74,5 +74,8 @@ impl GymEnv {
             reward: self.state.borrow().reward,
             done: self.state.borrow().done,
         }
+    }
+    pub fn state(&self) -> Ref<State> {
+        self.state.borrow()
     }
 }
