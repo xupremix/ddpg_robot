@@ -20,11 +20,17 @@ pub fn train(mode: Mode) {
     let observation_space = env.observation_space().iter().product::<i64>() as usize;
     let action_space = env.action_space() as usize;
     let actor = Actor::new(observation_space, action_space, &train_parameters);
+    let mut actor_target = Actor::new(observation_space, action_space, &train_parameters);
+    actor_target.import(&actor);
     let critic = Critic::new(observation_space, action_space, &train_parameters);
+    let mut critic_target = Critic::new(observation_space, action_space, &train_parameters);
+    critic_target.import(&critic);
     let noise = Noise::new(&train_parameters, action_space as i64);
     let mut agent = Agent::new(
         actor,
+        actor_target,
         critic,
+        critic_target,
         noise,
         MEM_DIM,
         true,

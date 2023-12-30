@@ -22,15 +22,15 @@ pub struct Agent {
 impl Agent {
     pub fn new(
         actor: Actor,
+        actor_target: Actor,
         critic: Critic,
+        critic_target: Critic,
         noise: Noise,
         mem_dim: usize,
         train: bool,
         gamma: f64,
         tau: f64,
     ) -> Self {
-        let actor_target = actor.clone();
-        let critic_target = critic.clone();
         let replay_memory = ReplayMemory::new(
             mem_dim as i64,
             actor.observation_space() as i64,
