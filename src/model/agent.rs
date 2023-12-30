@@ -1,5 +1,5 @@
 use tch::Kind::Float;
-use tch::{no_grad, Tensor};
+use tch::{no_grad, Reduction, Tensor};
 
 use crate::model::actor::Actor;
 use crate::model::critic::Critic;
@@ -75,11 +75,13 @@ impl Agent {
 
         let q = self.critic.forward(&states, &actions);
 
-        let diff = q_target - q;
-        let critic_loss = (&diff * &diff).mean(Float);
+        let celoss = q_target.cross_entropy_loss(&q, None, Reduction::Mean, -1, 0.);
+        // let diff = q_target - q;
+        // let critic_loss = (&diff * &diff).mean(Float);
 
         self.critic.optimizer_mut().zero_grad();
-        critic_loss.backward();
+        // critic_loss.backward();
+        celoss.backward();
         self.critic.optimizer_mut().step();
 
         let actor_loss = -self

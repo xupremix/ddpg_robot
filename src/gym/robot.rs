@@ -38,6 +38,23 @@ impl GymRobot {
         }
     }
 
+    fn can_destroy_or_put(&self) -> bool {
+        // can destroy since it has a coin adj
+        self.state.borrow().coin_adj.contains(&1.)
+            // can put since it has a bank adj and at least a coin in the backpack
+            || self.state.borrow().bank_adj.contains(&1.)
+                && *self
+                    .get_backpack()
+                    .get_contents()
+                    .get(&Content::Coin(0))
+                    .unwrap()
+                    != 0
+    }
+
+    fn wrong_dir(&self, i: usize) -> bool {
+        self.state.borrow().coin_dir[i] != 1. && self.state.borrow().bank_dir[i] != 1.
+    }
+
     pub fn step(&mut self, world: &mut World) -> f64 {
         let action = self.state.borrow().action;
         let dir = match action % 4 {
@@ -49,6 +66,9 @@ impl GymRobot {
         match action / 4 {
             0 => {
                 // move
+                if self.can_destroy_or_put() || self.wrong_dir((action % 4) as usize) {
+                    return REWARD_FOR_ILLEGAL_ACTION;
+                }
                 if let Ok((surroundings, _)) = go(self, world, dir) {
                     update_danger(self, world);
                     update_closest(self, world);
@@ -64,6 +84,7 @@ impl GymRobot {
                 }
             }
             1 => {
+                // destroy
                 if let Ok(amount) = destroy(self, world, dir) {
                     update_closest(self, world);
                     self.coins_destroyed += amount;
@@ -115,6 +136,9 @@ impl GymRobot {
             }
             _ => {
                 // scan
+                if self.can_destroy_or_put() {
+                    return REWARD_FOR_ILLEGAL_ACTION;
+                }
                 let distance = (self.get_energy().get_energy_level() as f64 / 3.
                     * PERCENTAGE_ENERGY_RESERVED_FOR_SCANNING)
                     .floor() as usize;
