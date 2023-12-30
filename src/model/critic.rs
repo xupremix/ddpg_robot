@@ -14,14 +14,6 @@ pub struct Critic {
     lr: f64,
 }
 
-impl Clone for Critic {
-    fn clone(&self) -> Self {
-        let mut new = Self::new(self.observation_space, self.action_space, self.lr);
-        new.vs.copy(&self.vs).unwrap();
-        new
-    }
-}
-
 impl Critic {
     pub fn new(
         observation_space: usize,
@@ -30,26 +22,36 @@ impl Critic {
     ) -> Self {
         let device = Device::cuda_if_available();
         let vs = VarStore::new(device);
-        let optimizer = Adam::default().build(&vs, lr).unwrap();
+        let optimizer = Adam::default()
+            .build(&vs, train_parameters.lr_critic)
+            .unwrap();
         let p = &vs.root();
+        let mut network = seq()
+            .add(linear(
+                p / "in",
+                (observation_space + action_space) as i64,
+                train_parameters.critic_hidden_layers[0],
+                Default::default(),
+            ))
+            .add_fn(|xs| xs.relu());
+        for (i, &[x, y]) in train_parameters.critic_hidden_layers.windows(2).enumerate() {
+            network.add(linear(p / format!("hd{}", i), x, y, Default::default()));
+            network.add_fn(|xs| xs.relu());
+        }
+        network.add(linear(
+            p / "out",
+            *train_parameters.critic_hidden_layers.last().unwrap(),
+            1,
+            Default::default(),
+        ));
         Self {
-            network: seq()
-                .add(linear(
-                    p / "in",
-                    (observation_space + action_space) as i64,
-                    HD_DIM_C,
-                    Default::default(),
-                ))
-                .add_fn(|xs| xs.relu())
-                .add(linear(p / "hd", HD_DIM_C, HD_DIM_C, Default::default()))
-                .add_fn(|xs| xs.relu())
-                .add(linear(p / "out", HD_DIM_C, 1, Default::default())),
+            network,
             device: p.device(),
             vs,
             observation_space,
             action_space,
             optimizer,
-            lr,
+            lr: train_parameters.lr_critic,
         }
     }
 
@@ -66,5 +68,8 @@ impl Critic {
     }
     pub fn var_store_mut(&mut self) -> &mut VarStore {
         &mut self.vs
+    }
+    pub fn import(&mut self, other: &Self) {
+        self.vs.load(&other.vs).unwrap();
     }
 }
