@@ -75,13 +75,13 @@ impl Agent {
 
         let q = self.critic.forward(&states, &actions);
 
-        let celoss = q_target.cross_entropy_loss::<Tensor>(&q, None, Reduction::Mean, -1, 0.);
-        // let diff = q_target - q;
-        // let critic_loss = (&diff * &diff).mean(Float);
+        // let celoss = q_target.cross_entropy_loss::<Tensor>(&q, None, Reduction::Mean, -1, 0.);
+        let diff = q_target - q;
+        let critic_loss = (&diff * &diff).mean(Float);
 
         self.critic.optimizer_mut().zero_grad();
-        // critic_loss.backward();
-        celoss.backward();
+        critic_loss.backward();
+        // celoss.backward();
         self.critic.optimizer_mut().step();
 
         let actor_loss = -self

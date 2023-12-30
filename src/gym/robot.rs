@@ -85,18 +85,18 @@ impl GymRobot {
             }
             1 => {
                 // destroy
-                if let Ok(amount) = destroy(self, world, dir) {
+                if let Ok(amt_dst) = destroy(self, world, dir) {
                     update_closest(self, world);
-                    self.coins_destroyed += amount;
+                    self.coins_destroyed += amt_dst;
                     if self.coins_destroyed >= COINS_DESTROYED_GOAL {
                         println!("Completed the coins destroyed task");
                         self.state.borrow_mut().done = true;
                         0.
-                    } else if amount == 0 {
+                    } else if amt_dst == 0 {
                         REWARD_FOR_ILLEGAL_ACTION
                     } else {
                         reward_fn(
-                            amount as f64,
+                            amt_dst as f64,
                             COEFFICIENT_X_COINS,
                             LOG_BASE_COINS,
                             LIM_F_COINS,
@@ -113,18 +113,18 @@ impl GymRobot {
                     .get_contents()
                     .get(&Content::Coin(0))
                     .unwrap();
-                if let Ok(amount) = put(self, world, Content::Coin(0), amount, dir) {
+                if let Ok(amt_put) = put(self, world, Content::Coin(0), amount, dir) {
                     update_closest(self, world);
-                    self.coins_stored += amount;
+                    self.coins_stored += amt_put;
                     if self.coins_stored >= COINS_STORED_GOAL {
                         println!("Completed the coins stored task");
                         self.state.borrow_mut().done = true;
                         0.
-                    } else if amount == 0 {
+                    } else if amt_put == 0 {
                         REWARD_FOR_ILLEGAL_ACTION
                     } else {
                         reward_fn(
-                            amount as f64,
+                            amt_put as f64,
                             COEFFICIENT_X_COINS,
                             LOG_BASE_COINS,
                             LIM_F_COINS,
