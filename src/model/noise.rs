@@ -1,7 +1,8 @@
 use tch::kind::{FLOAT_CPU, FLOAT_CUDA};
-use tch::{Cuda, Tensor};
+use tch::{Cuda, Device, Kind, Tensor};
 
 pub struct Noise {
+    mode: (Kind, Device),
     state: Tensor,
     theta: f64,
     sigma: f64,
@@ -14,8 +15,9 @@ impl Noise {
         } else {
             FLOAT_CPU
         };
-        let state = Tensor::ones([action_space], mode);
+        let state = Tensor::ones([action_space], mode.clone());
         Self {
+            mode,
             state,
             theta,
             sigma,
@@ -25,7 +27,7 @@ impl Noise {
 
     pub fn sample(&mut self) -> &Tensor {
         let dx = self.theta * (self.mu - &self.state)
-            + self.sigma * Tensor::randn(self.state.size(), FLOAT_CPU);
+            + self.sigma * Tensor::randn(self.state.size(), self.mode.clone());
         self.state += dx;
         &self.state
     }
