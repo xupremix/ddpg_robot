@@ -9,32 +9,39 @@ use crate::model::agent::Agent;
 use crate::model::critic::Critic;
 use crate::model::noise::Noise;
 use crate::utils::args::Mode;
-use crate::utils::consts::{
-    BATCH_SIZE, GAMMA, LR_A, LR_C, MAP_PATH, MEM_DIM, MU, SIGMA, TAU, THETA, TRAIN_LOG_PATH,
-    TRAIN_STATE_LOG_PATH,
-};
-use crate::utils::functions::plot;
+use crate::utils::consts::MEM_DIM;
+use crate::utils::functions::{create_train_params, plot};
 
-pub fn train(mode: &Mode, episodes: usize, max_ep_len: usize) {
+pub fn train(mode: Mode) {
     println!("Entering training mode");
-    let generator = WorldgeneratorUnwrap::init(false, Some(MAP_PATH.into()));
+    let train_parameters = create_train_params(mode.clone()).unwrap();
+    let generator = WorldgeneratorUnwrap::init(false, Some(train_parameters.save_map_path.into()));
     let mut env = GymEnv::new(generator);
     let observation_space = env.observation_space().iter().product::<i64>() as usize;
     let action_space = env.action_space() as usize;
-    let actor = Actor::new(observation_space, action_space, LR_A);
-    let critic = Critic::new(observation_space, action_space, LR_C);
-    let noise = Noise::new(THETA, SIGMA, MU, action_space as i64);
-    let mut agent = Agent::new(actor, critic, noise, MEM_DIM, true, GAMMA, TAU);
+    let actor = Actor::new(observation_space, action_space, &train_parameters);
+    let critic = Critic::new(observation_space, action_space, &train_parameters);
+    let noise = Noise::new(&train_parameters, action_space as i64);
+    let mut agent = Agent::new(
+        actor,
+        critic,
+        noise,
+        MEM_DIM,
+        true,
+        train_parameters.gamma,
+        train_parameters.tau,
+    );
 
     // data for plotting and saving
-    let mut log_file = File::create(TRAIN_LOG_PATH).unwrap();
-    let mut state_log_file = File::create(TRAIN_STATE_LOG_PATH).unwrap();
+    let mut log_file = File::create(&train_parameters.train_log_path).unwrap();
+    let mut state_log_file = File::create(&train_parameters.train_state_path).unwrap();
     log_file
         .write_all(b"Iter| Action |\tReward\t|\tDone\t|\tAcc_rw\n")
         .unwrap();
     state_log_file
         .write_all(b"Danger | CoinDir | CoinAdj | BankDir | BankAdj\n")
         .unwrap();
+
     let mut log_data = vec![];
     let mut state_log_data = vec![];
     let mut best_acc_rw = f64::MIN;
@@ -42,7 +49,7 @@ pub fn train(mode: &Mode, episodes: usize, max_ep_len: usize) {
     let mut min_rw = f64::MAX;
     let mut max_rw = f64::MIN;
 
-    for episode in 0..episodes {
+    for episode in 0..train_parameters.episodes {
         let mut ep_log_data = vec![];
         let mut ep_state_log_data = vec![];
         let mut obs = env.reset();
@@ -51,7 +58,7 @@ pub fn train(mode: &Mode, episodes: usize, max_ep_len: usize) {
         let mut ep_max_rw = f64::MIN;
         let mut ep_memory = vec![];
 
-        for i in 0..max_ep_len {
+        for i in 0..train_parameters.max_ep_len {
             // get an action given an observation
             let actions = agent.actions(&obs);
             // get the max action
@@ -86,15 +93,15 @@ pub fn train(mode: &Mode, episodes: usize, max_ep_len: usize) {
             }
             // store the transition into the replay memory
             agent.remember(&obs, &actions, &step.reward.into(), &step.obs);
-            if i > BATCH_SIZE {
-                // perform backpropagation
-                agent.train(BATCH_SIZE);
-            }
             if step.done {
                 break;
             }
             // update the observation
             obs = step.obs;
+        }
+
+        for _ in 0..train_parameters.train_iterations {
+            agent.train(train_parameters.batch_size);
         }
 
         println!("Episode: {episode} with a total reward of {acc_rw:.4}");
@@ -119,5 +126,5 @@ pub fn train(mode: &Mode, episodes: usize, max_ep_len: usize) {
     }
 
     // plot the best episode
-    plot(mode, memory, min_rw, max_rw);
+    plot(&train_parameters.train_plot_path, memory, min_rw, max_rw);
 }

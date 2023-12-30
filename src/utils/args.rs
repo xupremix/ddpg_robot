@@ -22,6 +22,7 @@ use clap::{Parser, Subcommand};
 //          --cdt      usize       [coin destroyed target]
 //          --cpt      usize       [coin placed target]
 //      eval: [start the evaluation]
+//          -s         String      [map path]
 //          -p         String      [model load path]
 //          -m         usize       [max episode length]
 
@@ -91,12 +92,24 @@ pub enum Mode {
         train_state_path: String,
     },
     Eval {
+        /// Map path
+        #[arg(short, long, default_value = "src/save/map.bin")]
+        save_map_path: String,
         /// Model load path
         #[arg(short, long, default_value = "src/save/model.pt")]
         path_model: String,
         /// Maximum episode length
         #[arg(short, long, default_value = "200")]
         max_ep_len: usize,
+        /// Eval plot path
+        #[arg(long, alias = "epp", default_value = "src/save/eval_plot.png")]
+        eval_plot_path: String,
+        /// Eval log path
+        #[arg(long, alias = "elp", default_value = "src/save/eval_data.log")]
+        eval_log_path: String,
+        /// Eval state path
+        #[arg(long, alias = "esp", default_value = "src/save/eval_state.log")]
+        eval_state_path: String,
     },
 }
 

@@ -12,11 +12,13 @@ use tch::no_grad;
 
 use crate::gym::robot::GymRobot;
 use crate::utils::args::Mode;
+use crate::utils::args::Mode::{Eval, Train};
 use crate::utils::consts::{
     COEFFICIENT_X_SCAN, CONTENT_TARGETS, EVAL_PLOT_PATH, FONT_SIZE, LABEL_AREA_SIZE, LIM_F_SCAN,
     LOG_BASE_SCAN, PLOT_FONT, PLOT_HEIGHT, PLOT_WIDTH, RW_NO_SCAN, TRAIN_PLOT_PATH, X_LABELS,
     Y_LABELS,
 };
+use crate::utils::{EvalParameters, TrainParameters};
 
 // weighted sum of two trainable variables
 pub fn update_vs(dst: &mut VarStore, src: &VarStore, tau: f64) {
@@ -31,12 +33,7 @@ pub fn update_vs(dst: &mut VarStore, src: &VarStore, tau: f64) {
     })
 }
 
-pub fn plot(mode: &Mode, memory: Vec<f64>, min_rw: f64, max_rw: f64) {
-    let path = match mode {
-        Mode::Init => panic!("Cannot plot in init mode"),
-        Mode::Train { .. } => TRAIN_PLOT_PATH.to_string(),
-        Mode::Eval { .. } => EVAL_PLOT_PATH.to_string(),
-    };
+pub fn plot(path: &String, memory: Vec<f64>, min_rw: f64, max_rw: f64) {
     // plot background
     let root = BitMapBackend::new(&path, (PLOT_WIDTH, PLOT_HEIGHT)).into_drawing_area();
     root.fill(&WHITE).unwrap();
@@ -296,4 +293,78 @@ pub fn scan_reward(
 
 pub fn reward_fn(x: f64, coeff_x: f64, log_base: f64, lim: f64) -> f64 {
     ((coeff_x * x + 1.0).log(log_base) + lim * x) / -x
+}
+
+pub fn create_eval_params(mode: Mode) -> Option<EvalParameters> {
+    if let Eval {
+        save_map_path,
+        path_model,
+        max_ep_len,
+        eval_plot_path,
+        eval_log_path,
+        eval_state_path,
+    } = mode
+    {
+        Some(EvalParameters {
+            save_map_path,
+            path_model,
+            max_ep_len,
+            eval_plot_path,
+            eval_log_path,
+            eval_state_path,
+        })
+    } else {
+        None
+    }
+}
+
+pub fn create_train_params(mode: Mode) -> Option<TrainParameters> {
+    if let Train {
+        episodes,
+        max_ep_len,
+        batch_size,
+        save_map_path,
+        train_iterations,
+        path_model,
+        actor_hidden_layers,
+        critic_hidden_layers,
+        lr_actor,
+        lr_critic,
+        gamma,
+        tau,
+        sigma,
+        theta,
+        mu,
+        coins_destroyed_target,
+        coin_stored_target,
+        train_plot_path,
+        train_log_path,
+        train_state_path,
+    } = mode
+    {
+        Some(TrainParameters {
+            episodes,
+            max_ep_len,
+            batch_size,
+            save_map_path,
+            train_iterations,
+            path_model,
+            actor_hidden_layers,
+            critic_hidden_layers,
+            lr_actor,
+            lr_critic,
+            gamma,
+            tau,
+            sigma,
+            theta,
+            mu,
+            coins_destroyed_target,
+            coin_stored_target,
+            train_plot_path,
+            train_log_path,
+            train_state_path,
+        })
+    } else {
+        None
+    }
 }

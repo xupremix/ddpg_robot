@@ -5,16 +5,17 @@ use worldgen_unwrap::public::WorldgeneratorUnwrap;
 
 use crate::gym::GymEnv;
 use crate::utils::args::Mode;
-use crate::utils::consts::{EVAL_LOG_PATH, EVAL_STATE_LOG_PATH, MAP_PATH, MODEL_PATH};
-use crate::utils::functions::plot;
+use crate::utils::functions::{create_eval_params, plot};
 
-pub fn eval(mode: &Mode, max_ep_len: usize) {
-    let generator = WorldgeneratorUnwrap::init(false, Some(MAP_PATH.into()));
+pub fn eval(mode: Mode) {
+    let eval_parameters = create_eval_params(mode.clone()).unwrap();
+    let generator = WorldgeneratorUnwrap::init(false, Some(eval_parameters.save_map_path.into()));
     let mut env = GymEnv::new(generator);
-    let mut model = CModule::load_on_device(MODEL_PATH, Device::cuda_if_available()).unwrap();
+    let mut model =
+        CModule::load_on_device(&eval_parameters.path_model, Device::cuda_if_available()).unwrap();
     model.set_eval();
-    let mut log_file = File::create(EVAL_LOG_PATH).unwrap();
-    let mut state_log_file = File::create(EVAL_STATE_LOG_PATH).unwrap();
+    let mut log_file = File::create(&eval_parameters.eval_log_path).unwrap();
+    let mut state_log_file = File::create(&eval_parameters.eval_state_path).unwrap();
     log_file
         .write_all(b"Iter| Action |\tReward\t|\tDone\t|\tAcc_rw\n")
         .unwrap();
@@ -61,12 +62,12 @@ pub fn eval(mode: &Mode, max_ep_len: usize) {
         if acc_rw > max_rw {
             max_rw = acc_rw;
         }
-        if i >= max_ep_len || step.done {
+        if i >= eval_parameters.max_ep_len || step.done {
             break;
         }
         obs = step.obs;
         i += 1;
     }
     println!("Evaluation: {acc_rw:.4}");
-    plot(mode, memory, min_rw, max_rw);
+    plot(&eval_parameters.eval_plot_path, memory, min_rw, max_rw);
 }

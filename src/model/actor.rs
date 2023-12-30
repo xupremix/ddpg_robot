@@ -3,6 +3,7 @@ use tch::nn::{linear, seq, Adam, Optimizer, OptimizerConfig, Sequential, VarStor
 use tch::{CModule, Cuda, Device, Tensor};
 
 use crate::utils::consts::{HD_DIM_A, MODEL_PATH};
+use crate::utils::TrainParameters;
 
 pub struct Actor {
     vs: VarStore,
@@ -23,7 +24,11 @@ impl Clone for Actor {
 }
 
 impl Actor {
-    pub fn new(observation_space: usize, action_space: usize, lr: f64) -> Self {
+    pub fn new(
+        observation_space: usize,
+        action_space: usize,
+        train_parameters: &TrainParameters,
+    ) -> Self {
         let device = Device::cuda_if_available();
         let vs = VarStore::new(device);
         let optimizer = Adam::default().build(&vs, lr).unwrap();

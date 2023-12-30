@@ -17,11 +17,8 @@ fn main() {
     if let Some(mode) = args.mode {
         match mode {
             Mode::Init => init(),
-            Mode::Train {
-                episodes,
-                max_ep_len,
-            } => train(&mode, episodes, max_ep_len),
-            Mode::Eval { max_ep_len } => eval(&mode, max_ep_len),
+            Mode::Train { .. } => train(mode),
+            Mode::Eval { .. } => eval(mode),
         }
     } else {
         println!("No mode specified");
