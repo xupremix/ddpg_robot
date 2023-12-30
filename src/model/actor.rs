@@ -2,7 +2,7 @@ use tch::kind::{FLOAT_CPU, FLOAT_CUDA};
 use tch::nn::{linear, seq, Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
 use tch::{CModule, Cuda, Device, Tensor};
 
-use crate::utils::consts::{HD_DIM_A, MODEL_PATH};
+use crate::utils::consts::MODEL_PATH;
 use crate::utils::TrainParameters;
 
 pub struct Actor {
@@ -15,14 +15,6 @@ pub struct Actor {
     lr: f64,
 }
 
-impl Clone for Actor {
-    fn clone(&self) -> Self {
-        let mut new = Self::new(self.observation_space, self.action_space, self.lr);
-        new.vs.copy(&self.vs).unwrap();
-        new
-    }
-}
-
 impl Actor {
     pub fn new(
         observation_space: usize,
@@ -31,31 +23,36 @@ impl Actor {
     ) -> Self {
         let device = Device::cuda_if_available();
         let vs = VarStore::new(device);
-        let optimizer = Adam::default().build(&vs, lr).unwrap();
+        let optimizer = Adam::default()
+            .build(&vs, train_parameters.lr_actor)
+            .unwrap();
         let p = &vs.root();
+        let mut network = seq()
+            .add(linear(
+                p / "in",
+                observation_space as i64,
+                train_parameters.actor_hidden_layers[0],
+                Default::default(),
+            ))
+            .add_fn(|xs| xs.relu());
+        for (i, &[x, y]) in train_parameters.actor_hidden_layers.windows(2).enumerate() {
+            network.add(linear(p / format!("hd{}", i), x, y, Default::default()));
+            network.add_fn(|xs| xs.relu());
+        }
+        network.add(linear(
+            p / "out",
+            *train_parameters.actor_hidden_layers.last().unwrap(),
+            action_space as i64,
+            Default::default(),
+        ));
         Self {
-            network: seq()
-                .add(linear(
-                    p / "in",
-                    observation_space as i64,
-                    HD_DIM_A,
-                    Default::default(),
-                ))
-                .add_fn(|xs| xs.relu())
-                .add(linear(p / "hd", HD_DIM_A, HD_DIM_A, Default::default()))
-                .add_fn(|xs| xs.relu())
-                .add(linear(
-                    p / "out",
-                    HD_DIM_A,
-                    action_space as i64,
-                    Default::default(),
-                )),
+            lr: train_parameters.lr_actor,
             device: p.device(),
+            network,
             observation_space,
             action_space,
             vs,
             optimizer,
-            lr,
         }
     }
 
@@ -101,5 +98,8 @@ impl Actor {
     }
     pub fn var_store_mut(&mut self) -> &mut VarStore {
         &mut self.vs
+    }
+    pub fn import(&mut self, other: &Self) {
+        self.vs.load(&other.vs).unwrap();
     }
 }

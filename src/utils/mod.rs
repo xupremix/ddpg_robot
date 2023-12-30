@@ -1,7 +1,6 @@
 pub mod args;
 pub mod consts;
 pub mod functions;
-mod macros;
 
 pub struct TrainParameters {
     pub episodes: usize,
@@ -16,9 +15,9 @@ pub struct TrainParameters {
     /// Model save path
     pub path_model: String,
     /// Actor hidden layers
-    pub actor_hidden_layers: Vec<usize>,
+    pub actor_hidden_layers: Vec<i64>,
     /// Critic hidden layers
-    pub critic_hidden_layers: Vec<usize>,
+    pub critic_hidden_layers: Vec<i64>,
     /// Actor learning rate
     pub lr_actor: f64,
     /// Critic learning rate

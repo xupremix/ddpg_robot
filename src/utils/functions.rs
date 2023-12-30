@@ -14,9 +14,8 @@ use crate::gym::robot::GymRobot;
 use crate::utils::args::Mode;
 use crate::utils::args::Mode::{Eval, Train};
 use crate::utils::consts::{
-    COEFFICIENT_X_SCAN, CONTENT_TARGETS, EVAL_PLOT_PATH, FONT_SIZE, LABEL_AREA_SIZE, LIM_F_SCAN,
-    LOG_BASE_SCAN, PLOT_FONT, PLOT_HEIGHT, PLOT_WIDTH, RW_NO_SCAN, TRAIN_PLOT_PATH, X_LABELS,
-    Y_LABELS,
+    COEFFICIENT_X_SCAN, CONTENT_TARGETS, FONT_SIZE, LABEL_AREA_SIZE, LIM_F_SCAN, LOG_BASE_SCAN,
+    PLOT_FONT, PLOT_HEIGHT, PLOT_WIDTH, RW_NO_SCAN, X_LABELS, Y_LABELS,
 };
 use crate::utils::{EvalParameters, TrainParameters};
 
@@ -291,8 +290,8 @@ pub fn scan_reward(
     }
 }
 
-pub fn reward_fn(x: f64, coeff_x: f64, log_base: f64, lim: f64) -> f64 {
-    ((coeff_x * x + 1.0).log(log_base) + lim * x) / -x
+pub fn reward_fn(x: f64, coefficient_x: f64, log_base: f64, lim: f64) -> f64 {
+    ((coefficient_x * x + 1.0).log(log_base) + lim * x) / -x
 }
 
 pub fn create_eval_params(mode: Mode) -> Option<EvalParameters> {

@@ -50,10 +50,10 @@ pub enum Mode {
         path_model: String,
         /// Actor hidden layers
         #[arg(short, long, value_delimiter = ' ', num_args = 0.., default_values_t = [256])]
-        actor_hidden_layers: Vec<usize>,
+        actor_hidden_layers: Vec<i64>,
         /// Critic hidden layers
         #[arg(short, long, value_delimiter = ' ', num_args = 0.., default_values_t = [256])]
-        critic_hidden_layers: Vec<usize>,
+        critic_hidden_layers: Vec<i64>,
         /// Actor learning rate
         #[arg(long, alias = "lra", default_value = "0.0001")]
         lr_actor: f64,
