@@ -1,15 +1,12 @@
+use crate::gym::GymEnv;
+use crate::utils::args::{Args, Mode};
+use crate::utils::eval::eval;
+use crate::utils::train::train;
 use clap::Parser;
 use worldgen_unwrap::public::WorldgeneratorUnwrap;
 
-use eval::eval;
-use gym::GymEnv;
-use train::train;
-use utils::args::{Args, Mode};
-
-mod eval;
 mod gym;
 mod model;
-mod train;
 mod utils;
 
 fn main() {

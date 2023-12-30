@@ -1,24 +1,7 @@
 use robotics_lib::world::tile::Content;
 
-pub const N_ACTIONS: i64 = 16; // 17? stay still?
+pub const N_ACTIONS: i64 = 16;
 pub const N_OBSERVATIONS: i64 = 20;
-pub const HD_DIM_A: i64 = 256;
-pub const HD_DIM_C: i64 = 256;
-pub const LR_A: f64 = 0.0001;
-pub const LR_C: f64 = 0.001;
-pub const TRAIN_PLOT_PATH: &str = "src/save/train_plot.png";
-pub const EVAL_PLOT_PATH: &str = "src/save/eval_plot.png";
-pub const MODEL_PATH: &str = "src/save/model.pt";
-pub const MAP_PATH: &str = "src/save/map.bin";
-pub const TRAIN_LOG_PATH: &str = "src/save/train_data.log";
-pub const TRAIN_STATE_LOG_PATH: &str = "src/save/train_state.log";
-pub const EVAL_LOG_PATH: &str = "src/save/eval_data.log";
-pub const EVAL_STATE_LOG_PATH: &str = "src/save/eval_state.log";
-pub const MU: f64 = 0.0;
-pub const THETA: f64 = 0.15;
-pub const SIGMA: f64 = 0.1;
-pub const TAU: f64 = 0.005;
-pub const GAMMA: f64 = 0.99;
 pub const MEM_DIM: usize = 100_000;
 pub const PLOT_WIDTH: u32 = 1024;
 pub const PLOT_HEIGHT: u32 = 768;
@@ -31,7 +14,6 @@ pub const CONTENT_TARGETS: [Content; 2] = [Content::Coin(0), Content::Bank(0..0)
 pub const COINS_DESTROYED_GOAL: usize = 40;
 pub const COINS_STORED_GOAL: usize = 52;
 // Rewards fn
-pub const BATCH_SIZE: usize = 10;
 pub const REWARD_FOR_ILLEGAL_ACTION: f64 = -1000.;
 pub const RW_NO_SCAN: f64 = -900.;
 pub const PERCENTAGE_ENERGY_RESERVED_FOR_SCANNING: f64 = 0.04;

@@ -1,7 +1,6 @@
 use tch::nn::{linear, seq, Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
 use tch::{Device, Tensor};
 
-use crate::utils::consts::HD_DIM_C;
 use crate::utils::TrainParameters;
 
 pub struct Critic {
@@ -70,6 +69,6 @@ impl Critic {
         &mut self.vs
     }
     pub fn import(&mut self, other: &Self) {
-        self.vs.load(&other.vs).unwrap();
+        self.vs.copy(&other.vs).unwrap();
     }
 }

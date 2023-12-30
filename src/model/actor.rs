@@ -2,10 +2,10 @@ use tch::kind::{FLOAT_CPU, FLOAT_CUDA};
 use tch::nn::{linear, seq, Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
 use tch::{CModule, Cuda, Device, Tensor};
 
-use crate::utils::consts::MODEL_PATH;
 use crate::utils::TrainParameters;
 
 pub struct Actor {
+    save_path: String,
     vs: VarStore,
     network: Sequential,
     device: Device,
@@ -46,6 +46,7 @@ impl Actor {
             Default::default(),
         ));
         Self {
+            save_path: train_parameters.path_model.clone(),
             lr: train_parameters.lr_actor,
             device: p.device(),
             network,
@@ -80,7 +81,7 @@ impl Actor {
         )
         .unwrap();
         // save the module
-        cmodule.save(MODEL_PATH).unwrap();
+        cmodule.save(&self.save_path).unwrap();
         self.vs.unfreeze();
     }
 
@@ -100,6 +101,6 @@ impl Actor {
         &mut self.vs
     }
     pub fn import(&mut self, other: &Self) {
-        self.vs.load(&other.vs).unwrap();
+        self.vs.copy(&other.vs).unwrap();
     }
 }

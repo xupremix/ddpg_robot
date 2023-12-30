@@ -1,6 +1,8 @@
 pub mod args;
 pub mod consts;
+pub mod eval;
 pub mod functions;
+pub mod train;
 
 pub struct TrainParameters {
     pub episodes: usize,

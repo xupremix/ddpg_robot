@@ -20,9 +20,9 @@ impl Noise {
         Self {
             mode,
             state,
-            theta,
-            sigma,
-            mu,
+            theta: train_parameters.theta,
+            sigma: train_parameters.sigma,
+            mu: train_parameters.mu,
         }
     }
 
