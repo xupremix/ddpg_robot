@@ -1,7 +1,7 @@
 use tch::nn::{linear, seq, Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
 use tch::{Device, Tensor};
 
-use crate::utils::consts::{HD_DIM, HD_DIM_2};
+use crate::utils::consts::HD_DIM_C;
 
 pub struct Critic {
     vs: VarStore,
@@ -32,13 +32,13 @@ impl Critic {
                 .add(linear(
                     p / "in",
                     (observation_space + action_space) as i64,
-                    HD_DIM,
+                    HD_DIM_C,
                     Default::default(),
                 ))
                 .add_fn(|xs| xs.relu())
-                .add(linear(p / "hd", HD_DIM, HD_DIM_2, Default::default()))
+                .add(linear(p / "hd", HD_DIM_C, HD_DIM_C, Default::default()))
                 .add_fn(|xs| xs.relu())
-                .add(linear(p / "out", HD_DIM_2, 1, Default::default())),
+                .add(linear(p / "out", HD_DIM_C, 1, Default::default())),
             device: p.device(),
             vs,
             observation_space,

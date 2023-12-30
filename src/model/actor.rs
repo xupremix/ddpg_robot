@@ -2,7 +2,7 @@ use tch::kind::{FLOAT_CPU, FLOAT_CUDA};
 use tch::nn::{linear, seq, Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
 use tch::{CModule, Cuda, Device, Tensor};
 
-use crate::utils::consts::{HD_DIM, HD_DIM_2, MODEL_PATH};
+use crate::utils::consts::{HD_DIM_A, MODEL_PATH};
 
 pub struct Actor {
     vs: VarStore,
@@ -33,15 +33,15 @@ impl Actor {
                 .add(linear(
                     p / "in",
                     observation_space as i64,
-                    HD_DIM,
+                    HD_DIM_A,
                     Default::default(),
                 ))
                 .add_fn(|xs| xs.relu())
-                .add(linear(p / "hd", HD_DIM, HD_DIM_2, Default::default()))
+                .add(linear(p / "hd", HD_DIM_A, HD_DIM_A, Default::default()))
                 .add_fn(|xs| xs.relu())
                 .add(linear(
                     p / "out",
-                    HD_DIM_2,
+                    HD_DIM_A,
                     action_space as i64,
                     Default::default(),
                 )),

@@ -2,8 +2,8 @@ use robotics_lib::world::tile::Content;
 
 pub const N_ACTIONS: i64 = 16; // 17? stay still?
 pub const N_OBSERVATIONS: i64 = 20;
-pub const HD_DIM: i64 = 128;
-pub const HD_DIM_2: i64 = 64;
+pub const HD_DIM_A: i64 = 128;
+pub const HD_DIM_C: i64 = 256;
 pub const LR_A: f64 = 0.001;
 pub const LR_C: f64 = 0.001;
 pub const TRAIN_PLOT_PATH: &str = "src/save/train_plot.png";
@@ -33,10 +33,10 @@ pub const COINS_STORED_GOAL: usize = 22;
 // Rewards fn
 pub const BATCH_SIZE: usize = 100;
 pub const REWARD_FOR_ILLEGAL_ACTION: f64 = -50.;
-pub const RW_NO_SCAN: f64 = -40.;
+pub const RW_NO_SCAN: f64 = -50.;
 pub const PERCENTAGE_ENERGY_RESERVED_FOR_SCANNING: f64 = 0.04;
 pub const LIM_F_COINS: f64 = 2.0;
-pub const BASE_GO_REWARD: f64 = -20.;
+pub const BASE_GO_REWARD: f64 = -10.;
 pub const COEFFICIENT_X_COINS: f64 = 8.0;
 pub const LOG_BASE_COINS: f64 = 2.0;
 pub const LIM_F_SCAN: f64 = 3.0;
