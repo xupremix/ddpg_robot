@@ -19,7 +19,7 @@ pub fn eval(mode: &Mode, max_ep_len: usize) {
         .write_all(b"Iter| Action |\tReward\t|\tDone\t|\tAcc_rw\n")
         .unwrap();
     state_log_file
-        .write_all(b"Danger | CoinDir | BankDir | CoinAdj | BankAdj\n")
+        .write_all(b"Danger | CoinDir | CoinAdj | BankDir | BankAdj\n")
         .unwrap();
     let mut memory = vec![];
     let mut min_rw = f64::MAX;
@@ -49,7 +49,7 @@ pub fn eval(mode: &Mode, max_ep_len: usize) {
         let state = env.state();
         let state_log = format!(
             "{:?} | {:?} | {:?} | {:?} | {:?}\n",
-            state.danger, state.coin_dir, state.bank_dir, state.coin_adj, state.bank_adj,
+            state.danger, state.coin_dir, state.coin_adj, state.bank_dir, state.bank_adj,
         );
         state_log_file.write_all(state_log.as_bytes()).unwrap();
 

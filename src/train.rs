@@ -9,10 +9,9 @@ use crate::model::agent::Agent;
 use crate::model::critic::Critic;
 use crate::model::noise::Noise;
 use crate::utils::args::Mode;
-use crate::utils::args::Mode::Train;
 use crate::utils::consts::{
-    BATCH_SIZE, EVAL_LOG_PATH, EVAL_STATE_LOG_PATH, GAMMA, LR_A, LR_C, MAP_PATH, MEM_DIM, MU,
-    SIGMA, TAU, THETA, TRAIN_LOG_PATH, TRAIN_STATE_LOG_PATH,
+    BATCH_SIZE, GAMMA, LR_A, LR_C, MAP_PATH, MEM_DIM, MU, SIGMA, TAU, THETA, TRAIN_LOG_PATH,
+    TRAIN_STATE_LOG_PATH,
 };
 use crate::utils::functions::plot;
 
@@ -34,7 +33,7 @@ pub fn train(mode: &Mode, episodes: usize, max_ep_len: usize) {
         .write_all(b"Iter| Action |\tReward\t|\tDone\t|\tAcc_rw\n")
         .unwrap();
     state_log_file
-        .write_all(b"Danger | CoinDir | BankDir | CoinAdj | BankAdj\n")
+        .write_all(b"Danger | CoinDir | CoinAdj | BankDir | BankAdj\n")
         .unwrap();
     let mut log_data = vec![];
     let mut state_log_data = vec![];
@@ -74,7 +73,7 @@ pub fn train(mode: &Mode, episodes: usize, max_ep_len: usize) {
             let state = env.state();
             let state_log = format!(
                 "{:?} | {:?} | {:?} | {:?} | {:?}\n",
-                state.danger, state.coin_dir, state.bank_dir, state.coin_adj, state.bank_adj,
+                state.danger, state.coin_dir, state.coin_adj, state.bank_dir, state.bank_adj,
             );
             ep_state_log_data.push(state_log);
 

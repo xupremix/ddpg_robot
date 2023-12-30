@@ -75,7 +75,7 @@ impl Agent {
 
         let q = self.critic.forward(&states, &actions);
 
-        let celoss = q_target.cross_entropy_loss(&q, None, Reduction::Mean, -1, 0.);
+        let celoss = q_target.cross_entropy_loss::<Tensor>(&q, None, Reduction::Mean, -1, 0.);
         // let diff = q_target - q;
         // let critic_loss = (&diff * &diff).mean(Float);
 
