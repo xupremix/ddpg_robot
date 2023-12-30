@@ -35,11 +35,17 @@ impl Actor {
                 Default::default(),
             ))
             .add_fn(|xs| xs.relu());
-        for (i, &[x, y]) in train_parameters.actor_hidden_layers.windows(2).enumerate() {
-            network.add(linear(p / format!("hd{}", i), x, y, Default::default()));
-            network.add_fn(|xs| xs.relu());
+        for (i, (&x, &y)) in train_parameters
+            .actor_hidden_layers
+            .iter()
+            .zip(train_parameters.actor_hidden_layers.iter().skip(1))
+            .enumerate()
+        {
+            network = network
+                .add(linear(p / format!("hd{}", i), x, y, Default::default()))
+                .add_fn(|xs| xs.relu());
         }
-        network.add(linear(
+        network = network.add(linear(
             p / "out",
             *train_parameters.actor_hidden_layers.last().unwrap(),
             action_space as i64,

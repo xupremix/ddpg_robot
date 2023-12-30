@@ -9,7 +9,8 @@ use crate::utils::functions::{create_eval_params, plot};
 
 pub fn eval(mode: Mode) {
     let eval_parameters = create_eval_params(mode.clone()).unwrap();
-    let generator = WorldgeneratorUnwrap::init(false, Some(eval_parameters.save_map_path.into()));
+    let generator =
+        WorldgeneratorUnwrap::init(false, Some(eval_parameters.save_map_path.clone().into()));
     let mut env = GymEnv::new(generator);
     let mut model =
         CModule::load_on_device(&eval_parameters.path_model, Device::cuda_if_available()).unwrap();

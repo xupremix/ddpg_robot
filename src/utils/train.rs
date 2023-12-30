@@ -15,7 +15,8 @@ use crate::utils::functions::{create_train_params, plot};
 pub fn train(mode: Mode) {
     println!("Entering training mode");
     let train_parameters = create_train_params(mode.clone()).unwrap();
-    let generator = WorldgeneratorUnwrap::init(false, Some(train_parameters.save_map_path.into()));
+    let generator =
+        WorldgeneratorUnwrap::init(false, Some(train_parameters.save_map_path.clone().into()));
     let mut env = GymEnv::new(generator);
     let observation_space = env.observation_space().iter().product::<i64>() as usize;
     let action_space = env.action_space() as usize;
