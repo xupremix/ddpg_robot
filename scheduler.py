@@ -2,20 +2,24 @@ import subprocess
 import threading
 
 
-base = "cargo run -- "
+base = "cargo run --"
+ep = 50
+max_ep = 150
+batch = 52
+save_base = "src/save"
+maps = [
+    "adj_danger_map.bin",
+    "coin_bank_1_away_map.bin",
+    "coin_bank_adj_map.bin",
+    "test_normal_map.bin",
+]
 
 
 def run_scheduler(i):
-    match i:
-        case 0:
-            #
-            print("case 0")
-        case 1:
-            print("case 1")
-        case 2:
-            print("case 2")
-        case 3:
-            print("case 3")
+    cmd = f'{base} train -e {ep} -m {max_ep} -b {batch} -s {save_base}/maps/{maps[i]} -p {save_base}/models/model_{i}.pt -a 400 300 -c 256 128 --cst 80 --cdt 100 --tpp {save_base}/train/train_plot_{i}.png --tlp {save_base}/train/train_log_{i}.log --tsp {save_base}/train/train_state_{i}.log'
+    subprocess.run(cmd, shell=True)
+    cmd = f'{base} eval -s {save_base}/maps/{maps[i]} -p {save_base}/models/model_{i}.pt --epp {save_base}/eval/eval_plot_{i}.png --elp {save_base}/eval/eval_log_{i}.log --esp {save_base}/eval/eval_state_{i}.log'
+    subprocess.run(cmd, shell=True)
 
 
 def main():

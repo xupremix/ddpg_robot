@@ -76,10 +76,10 @@ pub enum Mode {
         #[arg(long, default_value = "0.0")]
         mu: f64,
         /// How many coins the robot has to destroy to mark an episode as done
-        #[arg(long, alias = "ctd", default_value = "60")]
+        #[arg(long, alias = "cdt", default_value = "60")]
         coins_destroyed_target: usize,
         /// How many coins the robot has to store to mark an episode as done
-        #[arg(long, alias = "csd", default_value = "40")]
+        #[arg(long, alias = "cst", default_value = "40")]
         coin_stored_target: usize,
         /// Train plot path
         #[arg(long, alias = "tpp", default_value = "src/save/train_plot.png")]
