@@ -49,10 +49,10 @@ pub enum Mode {
         #[arg(short, long, default_value = "src/save/model.pt")]
         path_model: String,
         /// Actor hidden layers
-        #[arg(short, long, value_delimiter = ' ', num_args = 0.., default_values_t = [256])]
+        #[arg(short, long, value_delimiter = ' ', num_args = 0.., default_values_t = [400, 300])]
         actor_hidden_layers: Vec<i64>,
         /// Critic hidden layers
-        #[arg(short, long, value_delimiter = ' ', num_args = 0.., default_values_t = [256])]
+        #[arg(short, long, value_delimiter = ' ', num_args = 0.., default_values_t = [400, 300])]
         critic_hidden_layers: Vec<i64>,
         /// Actor learning rate
         #[arg(long, alias = "lra", default_value = "0.0001")]
@@ -64,10 +64,10 @@ pub enum Mode {
         #[arg(long, default_value = "0.99")]
         gamma: f64,
         /// Tau hyperparameter
-        #[arg(long, default_value = "0.005")]
+        #[arg(long, default_value = "0.001")]
         tau: f64,
         /// Sigma hyperparameter
-        #[arg(long, default_value = "0.1")]
+        #[arg(long, default_value = "0.2")]
         sigma: f64,
         /// Theta hyperparameter
         #[arg(long, default_value = "0.15")]

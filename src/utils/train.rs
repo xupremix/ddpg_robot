@@ -107,10 +107,6 @@ pub fn train(mode: Mode) {
             obs = step.obs;
         }
 
-        for _ in 0..train_parameters.train_iterations {
-            agent.train(train_parameters.batch_size);
-        }
-
         println!("Episode: {episode} with a total reward of {acc_rw:.4}");
 
         // save if the episode is better than the previous best
@@ -124,6 +120,10 @@ pub fn train(mode: Mode) {
             // save the actor model
             println!("Found new best");
             agent.save()
+        }
+
+        for _ in 0..train_parameters.train_iterations {
+            agent.train(train_parameters.batch_size);
         }
     }
     // log the data
