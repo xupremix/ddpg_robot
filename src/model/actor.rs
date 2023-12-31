@@ -12,7 +12,6 @@ pub struct Actor {
     observation_space: usize,
     action_space: usize,
     optimizer: Optimizer,
-    lr: f64,
 }
 
 impl Actor {
@@ -53,7 +52,6 @@ impl Actor {
         ));
         Self {
             save_path: train_parameters.path_model.clone(),
-            lr: train_parameters.lr_actor,
             device: p.device(),
             network,
             observation_space,

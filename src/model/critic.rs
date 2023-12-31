@@ -7,10 +7,7 @@ pub struct Critic {
     vs: VarStore,
     network: Sequential,
     device: Device,
-    observation_space: usize,
-    action_space: usize,
     optimizer: Optimizer,
-    lr: f64,
 }
 
 impl Critic {
@@ -53,10 +50,7 @@ impl Critic {
             network,
             device: p.device(),
             vs,
-            observation_space,
-            action_space,
             optimizer,
-            lr: train_parameters.lr_critic,
         }
     }
 
