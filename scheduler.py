@@ -5,7 +5,7 @@ n_workers = 4
 base = "cargo run --"
 ep = 50
 max_ep = 150
-batch = 52
+batch = 50
 save_base = "src/save"
 maps = [
     "adj_danger_map.bin",
@@ -15,20 +15,29 @@ maps = [
 ]
 actor_layers = "400 300 100"
 critic_layers = "256 128 64"
+coins_stored_target = 90
+coins_destroyed_target = 100
 
 
 def gen_eval_cmd(i):
     return f"""
-        {base} eval
-            -i {i}
-            
+        {base} -i {i}
+            eval
+            -s {save_base}/maps/{maps[i]}
+            -p {save_base}/models/model_{i}.pt
+            -m {max_ep}
+            --cst {coins_stored_target}
+            --cdt {coins_destroyed_target}
+            --epp {save_base}/eval/eval_plot_{i}.png
+            --elp {save_base}/eval/eval_log_{i}.log
+            --esp {save_base}/eval/eval_state_{i}.log
     """
 
 
 def gen_train_cmd(i):
     return f"""
-        {base} train
-            -i {i} 
+        {base} -i {i} 
+            train
             -e {ep} 
             -m {max_ep} 
             -b {batch} 
@@ -36,8 +45,8 @@ def gen_train_cmd(i):
             -p {save_base}/models/model_{i}.pt 
             -a {actor_layers}
             -c {critic_layers}
-            --cst 80
-            --cdt 100
+            --cst {coins_stored_target}
+            --cdt {coins_destroyed_target}
             --tpp {save_base}/train/train_plot_{i}.png
             --tlp {save_base}/train/train_log_{i}.log
             --tsp {save_base}/train/train_state_{i}.log
@@ -54,7 +63,7 @@ def run_scheduler(i):
 
 def main():
     with ThreadPoolExecutor(max_workers=n_workers) as pool:
-        pool.map(run_scheduler, range(4))
+        pool.map(run_scheduler, range(n_workers))
     print("Done")
 
 
