@@ -14,8 +14,8 @@ fn main() {
     if let Some(mode) = args.mode {
         match mode {
             Mode::Init => init(),
-            Mode::Train { .. } => train(mode),
-            Mode::Eval { .. } => eval(mode),
+            Mode::Train { .. } => train(mode, args.i),
+            Mode::Eval { .. } => eval(mode, args.i),
         }
     } else {
         println!("No mode specified");
@@ -25,6 +25,6 @@ fn main() {
 fn init() {
     println!("Entering init mode");
     println!("Initializing the Gym environment...");
-    let _ = GymEnv::new(WorldgeneratorUnwrap::init(true, None));
+    let _ = GymEnv::new(WorldgeneratorUnwrap::init(true, None), 0, 0);
     println!("Done");
 }

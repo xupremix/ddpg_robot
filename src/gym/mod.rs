@@ -23,6 +23,8 @@ pub struct GymEnv {
     generator: WorldgeneratorUnwrap,
     state: Rc<RefCell<State>>,
     runner: Runner,
+    coins_destroyed_goal: usize,
+    coins_stored_goal: usize,
 }
 
 pub struct Step {
@@ -33,7 +35,11 @@ pub struct Step {
 }
 
 impl GymEnv {
-    pub fn new(mut generator: WorldgeneratorUnwrap) -> Self {
+    pub fn new(
+        mut generator: WorldgeneratorUnwrap,
+        coins_destroyed_goal: usize,
+        coins_stored_goal: usize,
+    ) -> Self {
         let state = Rc::new(RefCell::new(State::default()));
         let mut runner =
             Runner::new(Box::new(GymRobot::new(state.clone())), &mut generator).unwrap();
@@ -44,7 +50,9 @@ impl GymEnv {
             observation_space: vec![N_OBSERVATIONS],
             generator,
             runner,
+            coins_destroyed_goal,
             state,
+            coins_stored_goal,
         }
     }
     pub fn action_space(&self) -> i64 {
@@ -56,7 +64,11 @@ impl GymEnv {
     pub fn reset(&mut self) -> Tensor {
         *self.state.borrow_mut() = State::default();
         self.runner = Runner::new(
-            Box::new(GymRobot::new(self.state.clone())),
+            Box::new(GymRobot::new(
+                self.state.clone(),
+                self.coins_destroyed_goal,
+                self.coins_stored_goal,
+            )),
             &mut self.generator,
         )
         .unwrap();

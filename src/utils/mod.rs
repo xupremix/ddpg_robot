@@ -37,7 +37,7 @@ pub struct TrainParameters {
     /// How many coins the robot has to destroy to mark an episode as done
     pub coins_destroyed_target: usize,
     /// How many coins the robot has to store to mark an episode as done
-    pub coin_stored_target: usize,
+    pub coins_stored_target: usize,
     /// Train plot path
     pub train_plot_path: String,
     /// Train log path
@@ -53,6 +53,10 @@ pub struct EvalParameters {
     pub path_model: String,
     /// Maximum episode length
     pub max_ep_len: usize,
+    /// How many coins the robot has to destroy to mark an episode as done
+    pub coins_destroyed_target: usize,
+    /// How many coins the robot has to store to mark an episode as done
+    pub coins_stored_target: usize,
     /// Eval plot path
     pub eval_plot_path: String,
     /// Eval log path

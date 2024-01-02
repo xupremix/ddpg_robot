@@ -25,6 +25,8 @@ use clap::{Parser, Subcommand};
 //          -s         String      [map path]
 //          -p         String      [model load path]
 //          -m         usize       [max episode length]
+//          --cdt      usize       [coin destroyed target]
+//          --cpt      usize       [coin placed target]
 
 #[derive(Subcommand, Clone)]
 pub enum Mode {
@@ -80,7 +82,7 @@ pub enum Mode {
         coins_destroyed_target: usize,
         /// How many coins the robot has to store to mark an episode as done
         #[arg(long, alias = "cst", default_value = "40")]
-        coin_stored_target: usize,
+        coins_stored_target: usize,
         /// Train plot path
         #[arg(long, alias = "tpp", default_value = "src/save/train_plot.png")]
         train_plot_path: String,
@@ -101,6 +103,12 @@ pub enum Mode {
         /// Maximum episode length
         #[arg(short, long, default_value = "200")]
         max_ep_len: usize,
+        /// How many coins the robot has to destroy to mark an episode as done
+        #[arg(long, alias = "cdt", default_value = "60")]
+        coins_destroyed_target: usize,
+        /// How many coins the robot has to store to mark an episode as done
+        #[arg(long, alias = "cst", default_value = "40")]
+        coins_stored_target: usize,
         /// Eval plot path
         #[arg(long, alias = "epp", default_value = "src/save/eval_plot.png")]
         eval_plot_path: String,
@@ -116,6 +124,9 @@ pub enum Mode {
 #[derive(Parser)]
 #[command(author = "Filippo Lollato")]
 pub struct Args {
+    /// thread index
+    #[arg(short, long, default_value = 0)]
+    pub i: usize,
     /// mode
     #[command(subcommand)]
     pub mode: Option<Mode>,

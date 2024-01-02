@@ -11,8 +11,6 @@ pub const LABEL_AREA_SIZE: u32 = 40;
 pub const X_LABELS: usize = 20;
 pub const Y_LABELS: usize = 30;
 pub const CONTENT_TARGETS: [Content; 2] = [Content::Coin(0), Content::Bank(0..0)];
-pub const COINS_DESTROYED_GOAL: usize = 40;
-pub const COINS_STORED_GOAL: usize = 52;
 // Rewards fn
 pub const REWARD_FOR_ILLEGAL_ACTION: f64 = -1000.;
 pub const RW_NO_SCAN: f64 = -900.;

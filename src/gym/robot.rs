@@ -22,17 +22,25 @@ pub struct GymRobot {
     pub closest_bank: Option<(usize, usize)>,
     pub coins_destroyed: usize,
     pub coins_stored: usize,
+    pub coins_destroyed_goal: usize,
+    pub coins_stored_goal: usize,
     setup: bool,
 }
 
 impl GymRobot {
-    pub fn new(state: Rc<RefCell<State>>) -> Self {
+    pub fn new(
+        state: Rc<RefCell<State>>,
+        coins_destroyed_goal: usize,
+        coins_stored_goal: usize,
+    ) -> Self {
         Self {
             robot: Robot::new(),
             closest_coin: None,
             closest_bank: None,
             coins_destroyed: 0,
             coins_stored: 0,
+            coins_destroyed_goal,
+            coins_stored_goal,
             setup: true,
             state,
         }
@@ -88,7 +96,7 @@ impl GymRobot {
                 if let Ok(amt_dst) = destroy(self, world, dir) {
                     update_closest(self, world);
                     self.coins_destroyed += amt_dst;
-                    if self.coins_destroyed >= COINS_DESTROYED_GOAL {
+                    if self.coins_destroyed >= self.coins_destroyed_goal {
                         println!("Completed the coins destroyed task");
                         self.state.borrow_mut().done = true;
                         0.
@@ -116,7 +124,7 @@ impl GymRobot {
                 if let Ok(amt_put) = put(self, world, Content::Coin(0), amount, dir) {
                     update_closest(self, world);
                     self.coins_stored += amt_put;
-                    if self.coins_stored >= COINS_STORED_GOAL {
+                    if self.coins_stored >= self.coins_stored_goal {
                         println!("Completed the coins stored task");
                         self.state.borrow_mut().done = true;
                         0.

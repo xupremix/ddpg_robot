@@ -7,11 +7,15 @@ use crate::gym::GymEnv;
 use crate::utils::args::Mode;
 use crate::utils::functions::{create_eval_params, plot};
 
-pub fn eval(mode: Mode) {
+pub fn eval(mode: Mode, thread_i: usize) {
     let eval_parameters = create_eval_params(mode.clone()).unwrap();
     let generator =
         WorldgeneratorUnwrap::init(false, Some(eval_parameters.save_map_path.clone().into()));
-    let mut env = GymEnv::new(generator);
+    let mut env = GymEnv::new(
+        generator,
+        eval_parameters.coins_destroyed_target,
+        eval_parameters.coins_stored_target,
+    );
     let mut model =
         CModule::load_on_device(&eval_parameters.path_model, Device::cuda_if_available()).unwrap();
     model.set_eval();
@@ -69,6 +73,6 @@ pub fn eval(mode: Mode) {
         obs = step.obs;
         i += 1;
     }
-    println!("Evaluation: {acc_rw:.4}");
+    println!("T: {thread_i}, evaluation: {acc_rw:.4}");
     plot(&eval_parameters.eval_plot_path, memory, min_rw, max_rw);
 }

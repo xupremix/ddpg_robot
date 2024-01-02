@@ -12,12 +12,16 @@ use crate::utils::args::Mode;
 use crate::utils::consts::MEM_DIM;
 use crate::utils::functions::{create_train_params, plot};
 
-pub fn train(mode: Mode) {
+pub fn train(mode: Mode, thread_i: usize) {
     println!("Entering training mode");
     let train_parameters = create_train_params(mode.clone()).unwrap();
     let generator =
         WorldgeneratorUnwrap::init(false, Some(train_parameters.save_map_path.clone().into()));
-    let mut env = GymEnv::new(generator);
+    let mut env = GymEnv::new(
+        generator,
+        train_parameters.coins_destroyed_target,
+        train_parameters.coins_stored_target,
+    );
     let observation_space = env.observation_space().iter().product::<i64>() as usize;
     let action_space = env.action_space() as usize;
     let actor = Actor::new(observation_space, action_space, &train_parameters);
@@ -107,7 +111,7 @@ pub fn train(mode: Mode) {
             obs = step.obs;
         }
 
-        println!("Episode: {episode} with a total reward of {acc_rw:.4}");
+        println!("T: {thread_i}, episode: {episode} with a total reward of {acc_rw:.4}");
 
         // save if the episode is better than the previous best
         if acc_rw > best_acc_rw {
@@ -118,7 +122,7 @@ pub fn train(mode: Mode) {
             max_rw = ep_max_rw;
             memory = ep_memory;
             // save the actor model
-            println!("Found new best");
+            println!("T: {thread_i}, found new best");
             agent.save()
         }
 

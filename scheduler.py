@@ -1,11 +1,11 @@
-import subprocess
-import threading
+from subprocess import run
+from concurrent.futures import ThreadPoolExecutor
 
-
+n_workers = 4
 base = "cargo run --"
-ep = 100
-max_ep = 200
-batch = 100
+ep = 50
+max_ep = 150
+batch = 52
 save_base = "src/save"
 maps = [
     "adj_danger_map.bin",
@@ -13,23 +13,48 @@ maps = [
     "coin_bank_adj_map.bin",
     "test_normal_map.bin",
 ]
+actor_layers = "400 300 100"
+critic_layers = "256 128 64"
+
+
+def gen_eval_cmd(i):
+    return f"""
+        {base} eval
+            -i {i}
+            
+    """
+
+
+def gen_train_cmd(i):
+    return f"""
+        {base} train
+            -i {i} 
+            -e {ep} 
+            -m {max_ep} 
+            -b {batch} 
+            -s {save_base}/maps/{maps[i]} 
+            -p {save_base}/models/model_{i}.pt 
+            -a {actor_layers}
+            -c {critic_layers}
+            --cst 80
+            --cdt 100
+            --tpp {save_base}/train/train_plot_{i}.png
+            --tlp {save_base}/train/train_log_{i}.log
+            --tsp {save_base}/train/train_state_{i}.log
+    """
 
 
 def run_scheduler(i):
-    cmd = f'{base} train -e {ep} -m {max_ep} -b {batch} -s {save_base}/maps/{maps[i]} -p {save_base}/models/model_{i}.pt -a 400 300 -c 256 128 --cst 100 --cdt 170 --tpp {save_base}/train/train_plot_{i}.png --tlp {save_base}/train/train_log_{i}.log --tsp {save_base}/train/train_state_{i}.log'
-    subprocess.run(cmd, shell=True)
-    cmd = f'{base} eval -s {save_base}/maps/{maps[i]} -p {save_base}/models/model_{i}.pt --epp {save_base}/eval/eval_plot_{i}.png --elp {save_base}/eval/eval_log_{i}.log --esp {save_base}/eval/eval_state_{i}.log'
-    subprocess.run(cmd, shell=True)
+    train_cmd = gen_train_cmd(i)
+    run(train_cmd, shell=True)
+
+    eval_cmd = gen_eval_cmd(i)
+    run(eval_cmd, shell=True)
 
 
 def main():
-    threads = []
-    for i in range(0, 4):
-        threads.append(threading.Thread(target=run_scheduler, args=(i,)))
-        threads[i].start()
-
-    for thread in threads:
-        thread.join()
+    with ThreadPoolExecutor(max_workers=n_workers) as pool:
+        pool.map(run_scheduler, range(4))
     print("Done")
 
 
