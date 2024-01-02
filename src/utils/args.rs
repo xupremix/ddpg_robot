@@ -125,7 +125,7 @@ pub enum Mode {
 #[command(author = "Filippo Lollato")]
 pub struct Args {
     /// thread index
-    #[arg(short, long, default_value = 0)]
+    #[arg(short, long, default_value = "0")]
     pub i: usize,
     /// mode
     #[command(subcommand)]
