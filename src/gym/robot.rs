@@ -1,6 +1,6 @@
 use crate::gym::state::State;
 use crate::utils::consts::{
-    BASE_GO_REWARD, COEFFICIENT_X_COINS, COINS_DESTROYED_GOAL, COINS_STORED_GOAL, LIM_F_COINS,
+    BASE_GO_REWARD, COEFFICIENT_X_COINS, LIM_F_COINS,
     LOG_BASE_COINS, PERCENTAGE_ENERGY_RESERVED_FOR_SCANNING, REWARD_FOR_ILLEGAL_ACTION,
 };
 use crate::utils::functions::{reward_fn, scan_reward, update_closest, update_danger};

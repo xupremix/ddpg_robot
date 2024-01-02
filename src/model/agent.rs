@@ -51,9 +51,9 @@ impl Agent {
 
     pub fn actions(&mut self, obs: &Tensor) -> Tensor {
         let mut actions = no_grad(|| self.actor.forward(obs));
-        if self.train {
-            actions += self.noise.sample();
-        }
+        // if self.train {
+        //     actions += self.noise.sample();
+        // }
         actions
     }
 

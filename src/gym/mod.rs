@@ -42,7 +42,7 @@ impl GymEnv {
     ) -> Self {
         let state = Rc::new(RefCell::new(State::default()));
         let mut runner =
-            Runner::new(Box::new(GymRobot::new(state.clone())), &mut generator).unwrap();
+            Runner::new(Box::new(GymRobot::new(state.clone(), coins_destroyed_goal, coins_stored_goal)), &mut generator).unwrap();
         // let a tick pass to get the near data and init the danger map
         runner.game_tick().unwrap();
         Self {

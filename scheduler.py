@@ -2,10 +2,10 @@ from subprocess import run
 from concurrent.futures import ThreadPoolExecutor
 
 n_workers = 4
-base = "cargo run --"
-ep = 50
-max_ep = 150
-batch = 50
+base = "cargo run -- "
+ep = 1000
+max_ep = 60
+batch = 30
 save_base = "src/save"
 maps = [
     "adj_danger_map.bin",
@@ -13,10 +13,11 @@ maps = [
     "coin_bank_adj_map.bin",
     "test_normal_map.bin",
 ]
-actor_layers = "400 300 100"
-critic_layers = "256 128 64"
-coins_stored_target = 90
-coins_destroyed_target = 100
+train_n = 20
+actor_layers = "200 100"
+critic_layers = "100 50"
+coins_stored_target = 50
+coins_destroyed_target = 70
 
 
 def gen_eval_cmd(i):
@@ -31,18 +32,19 @@ def gen_eval_cmd(i):
             --epp {save_base}/eval/eval_plot_{i}.png
             --elp {save_base}/eval/eval_log_{i}.log
             --esp {save_base}/eval/eval_state_{i}.log
-    """
+    """.strip("\t").replace("\n", " ")
 
 
 def gen_train_cmd(i):
     return f"""
-        {base} -i {i} 
+        {base} -i {i}
             train
-            -e {ep} 
-            -m {max_ep} 
-            -b {batch} 
-            -s {save_base}/maps/{maps[i]} 
-            -p {save_base}/models/model_{i}.pt 
+            -e {ep}
+            -m {max_ep}
+            -b {batch}
+            -t {train_n}
+            -s {save_base}/maps/{maps[i]}
+            -p {save_base}/models/model_{i}.pt
             -a {actor_layers}
             -c {critic_layers}
             --cst {coins_stored_target}
@@ -50,7 +52,7 @@ def gen_train_cmd(i):
             --tpp {save_base}/train/train_plot_{i}.png
             --tlp {save_base}/train/train_log_{i}.log
             --tsp {save_base}/train/train_state_{i}.log
-    """
+    """.strip("\t").replace("\n", " ")
 
 
 def run_scheduler(i):

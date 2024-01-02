@@ -42,6 +42,15 @@ pub fn eval(mode: Mode, thread_i: usize) {
             .int64_value(&[]);
         let step = env.step(action);
 
+        acc_rw += step.reward;
+        memory.push(acc_rw);
+        if acc_rw < min_rw {
+            min_rw = acc_rw;
+        }
+        if acc_rw > max_rw {
+            max_rw = acc_rw;
+        }
+
         // log to file
         let log = format!(
             "{i}\t|\t{action}\t |\t{reward:.4}\t|\t{done}\t|\t {acc_rw:.4}\n",
@@ -59,14 +68,6 @@ pub fn eval(mode: Mode, thread_i: usize) {
         );
         state_log_file.write_all(state_log.as_bytes()).unwrap();
 
-        acc_rw += step.reward;
-        memory.push(acc_rw);
-        if acc_rw < min_rw {
-            min_rw = acc_rw;
-        }
-        if acc_rw > max_rw {
-            max_rw = acc_rw;
-        }
         if i >= eval_parameters.max_ep_len || step.done {
             break;
         }
