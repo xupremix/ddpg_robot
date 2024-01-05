@@ -1,8 +1,7 @@
+use crate::utils::functions::create_network;
 use tch::kind::{FLOAT_CPU, FLOAT_CUDA};
-use tch::nn::{linear, seq, Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
+use tch::nn::{Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
 use tch::{CModule, Cuda, Device, Tensor};
-
-use crate::utils::TrainParameters;
 
 pub struct Actor {
     save_path: String,
@@ -18,40 +17,22 @@ impl Actor {
     pub fn new(
         observation_space: usize,
         action_space: usize,
-        train_parameters: &TrainParameters,
+        lr: f64,
+        hidden_layers: &[i64],
+        save_path: String,
     ) -> Self {
         let device = Device::cuda_if_available();
         let vs = VarStore::new(device);
-        let optimizer = Adam::default()
-            .build(&vs, train_parameters.lr_actor)
-            .unwrap();
+        let optimizer = Adam::default().build(&vs, lr).unwrap();
         let p = &vs.root();
-        let mut network = seq()
-            .add(linear(
-                p / "in",
-                observation_space as i64,
-                train_parameters.actor_hidden_layers[0],
-                Default::default(),
-            ))
-            .add_fn(|xs| xs.relu());
-        for (i, (&x, &y)) in train_parameters
-            .actor_hidden_layers
-            .iter()
-            .zip(train_parameters.actor_hidden_layers.iter().skip(1))
-            .enumerate()
-        {
-            network = network
-                .add(linear(p / format!("hd{}", i), x, y, Default::default()))
-                .add_fn(|xs| xs.relu());
-        }
-        network = network.add(linear(
-            p / "out",
-            *train_parameters.actor_hidden_layers.last().unwrap(),
+        let network = create_network(
+            p,
+            observation_space as i64,
             action_space as i64,
-            Default::default(),
-        ));
+            hidden_layers,
+        );
         Self {
-            save_path: train_parameters.path_model.clone(),
+            save_path,
             device: p.device(),
             network,
             observation_space,

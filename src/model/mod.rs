@@ -1,5 +1,10 @@
-pub mod actor;
-pub mod agent;
-pub mod critic;
+mod actor;
+mod agent;
+mod critic;
 mod memory;
-pub mod noise;
+mod noise;
+pub use actor::Actor;
+pub use agent::Agent;
+pub use critic::Critic;
+pub use memory::ReplayMemory;
+pub use noise::Noise;

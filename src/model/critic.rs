@@ -1,7 +1,6 @@
-use tch::nn::{linear, seq, Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
+use crate::utils::functions::create_network;
+use tch::nn::{Adam, Optimizer, OptimizerConfig, Sequential, VarStore};
 use tch::{Device, Tensor};
-
-use crate::utils::TrainParameters;
 
 pub struct Critic {
     vs: VarStore,
@@ -14,38 +13,19 @@ impl Critic {
     pub fn new(
         observation_space: usize,
         action_space: usize,
-        train_parameters: &TrainParameters,
+        lr: f64,
+        hidden_layers: &[i64],
     ) -> Self {
         let device = Device::cuda_if_available();
         let vs = VarStore::new(device);
-        let optimizer = Adam::default()
-            .build(&vs, train_parameters.lr_critic)
-            .unwrap();
+        let optimizer = Adam::default().build(&vs, lr).unwrap();
         let p = &vs.root();
-        let mut network = seq()
-            .add(linear(
-                p / "in",
-                (observation_space + action_space) as i64,
-                train_parameters.critic_hidden_layers[0],
-                Default::default(),
-            ))
-            .add_fn(|xs| xs.relu());
-        for (i, (&x, &y)) in train_parameters
-            .critic_hidden_layers
-            .iter()
-            .zip(train_parameters.critic_hidden_layers.iter().skip(1))
-            .enumerate()
-        {
-            network = network
-                .add(linear(p / format!("hd{}", i), x, y, Default::default()))
-                .add_fn(|xs| xs.relu());
-        }
-        network = network.add(linear(
-            p / "out",
-            *train_parameters.critic_hidden_layers.last().unwrap(),
-            1,
-            Default::default(),
-        ));
+        let network = create_network(
+            p,
+            observation_space as i64,
+            action_space as i64,
+            hidden_layers,
+        );
         Self {
             network,
             device: p.device(),

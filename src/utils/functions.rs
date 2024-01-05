@@ -7,7 +7,7 @@ use robotics_lib::runner::Runnable;
 use robotics_lib::utils::calculate_cost_go_with_environment;
 use robotics_lib::world::tile::{Content, Tile};
 use robotics_lib::world::World;
-use tch::nn::VarStore;
+use tch::nn::{linear, seq, Path, Sequential, VarStore};
 use tch::no_grad;
 
 use crate::gym::robot::GymRobot;
@@ -32,7 +32,7 @@ pub fn update_vs(dst: &mut VarStore, src: &VarStore, tau: f64) {
     })
 }
 
-pub fn plot(path: &String, memory: Vec<f64>, min_rw: f64, max_rw: f64) {
+pub fn plot(path: String, memory: Vec<f64>, min_rw: f64, max_rw: f64) {
     // plot background
     let root = BitMapBackend::new(&path, (PLOT_WIDTH, PLOT_HEIGHT)).into_drawing_area();
     root.fill(&WHITE).unwrap();
@@ -294,80 +294,33 @@ pub fn reward_fn(x: f64, coefficient_x: f64, log_base: f64, lim: f64) -> f64 {
     ((coefficient_x * x + 1.0).log(log_base) + lim * x) / -x
 }
 
-pub fn create_eval_params(mode: Mode) -> Option<EvalParameters> {
-    if let Eval {
-        save_map_path,
-        path_model,
-        max_ep_len,
-        coins_destroyed_target,
-        coins_stored_target,
-        eval_plot_path,
-        eval_log_path,
-        eval_state_path,
-    } = mode
+pub fn create_network(
+    p: &Path,
+    observation_space: i64,
+    action_space: i64,
+    hidden_layers: &[i64],
+) -> Sequential {
+    let mut network = seq()
+        .add(linear(
+            p / "in",
+            observation_space + action_space,
+            hidden_layers[0],
+            Default::default(),
+        ))
+        .add_fn(|xs| xs.relu());
+    for (i, (&x, &y)) in hidden_layers
+        .iter()
+        .zip(hidden_layers.iter().skip(1))
+        .enumerate()
     {
-        Some(EvalParameters {
-            save_map_path,
-            path_model,
-            max_ep_len,
-            coins_destroyed_target,
-            coins_stored_target,
-            eval_plot_path,
-            eval_log_path,
-            eval_state_path,
-        })
-    } else {
-        None
+        network = network
+            .add(linear(p / format!("hd{}", i), x, y, Default::default()))
+            .add_fn(|xs| xs.relu());
     }
-}
-
-pub fn create_train_params(mode: Mode) -> Option<TrainParameters> {
-    if let Train {
-        episodes,
-        max_ep_len,
-        batch_size,
-        save_map_path,
-        train_iterations,
-        path_model,
-        actor_hidden_layers,
-        critic_hidden_layers,
-        lr_actor,
-        lr_critic,
-        gamma,
-        tau,
-        sigma,
-        theta,
-        mu,
-        coins_destroyed_target,
-        coins_stored_target,
-        train_plot_path,
-        train_log_path,
-        train_state_path,
-    } = mode
-    {
-        Some(TrainParameters {
-            episodes,
-            max_ep_len,
-            batch_size,
-            save_map_path,
-            train_iterations,
-            path_model,
-            actor_hidden_layers,
-            critic_hidden_layers,
-            lr_actor,
-            lr_critic,
-            gamma,
-            tau,
-            sigma,
-            theta,
-            mu,
-            coins_destroyed_target,
-            coins_stored_target,
-            train_plot_path,
-            train_log_path,
-            train_state_path,
-        })
-    } else {
-        None
-    }
+    network.add(linear(
+        p / "out",
+        *hidden_layers.last().unwrap(),
+        1,
+        Default::default(),
+    ))
 }

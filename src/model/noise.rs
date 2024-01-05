@@ -1,4 +1,3 @@
-use crate::utils::TrainParameters;
 use tch::kind::{FLOAT_CPU, FLOAT_CUDA};
 use tch::{Cuda, Device, Kind, Tensor};
 
@@ -10,7 +9,7 @@ pub struct Noise {
     mu: f64,
 }
 impl Noise {
-    pub fn new(train_parameters: &TrainParameters, action_space: i64) -> Self {
+    pub fn new(theta: f64, sigma: f64, mu: f64, action_space: i64) -> Self {
         let mode = if Cuda::is_available() {
             FLOAT_CUDA
         } else {
@@ -20,9 +19,9 @@ impl Noise {
         Self {
             mode,
             state,
-            theta: train_parameters.theta,
-            sigma: train_parameters.sigma,
-            mu: train_parameters.mu,
+            theta,
+            sigma,
+            mu,
         }
     }
 
