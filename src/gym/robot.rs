@@ -6,7 +6,7 @@ use crate::utils::consts::{
 use crate::utils::functions::{reward_fn, scan_reward, update_closest, update_danger};
 use robotics_lib::energy::Energy;
 use robotics_lib::event::events::Event;
-use robotics_lib::interface::{destroy, go, one_direction_view, put, Direction};
+use robotics_lib::interface::{destroy, go, one_direction_view, put, robot_view, Direction};
 use robotics_lib::runner::backpack::BackPack;
 use robotics_lib::runner::{Robot, Runnable};
 use robotics_lib::world::coordinates::Coordinate;
@@ -115,6 +115,42 @@ impl GymRobot {
             }
             2 => {
                 // put
+                // check that the put target is valid (Bank)
+                let tmp_adj = robot_view(self, world);
+                match &dir {
+                    Direction::Up => match &tmp_adj[0][1] {
+                        None => return REWARD_FOR_ILLEGAL_ACTION,
+                        Some(tile) => {
+                            if tile.content.to_default() != Content::Bank(0..0) {
+                                return REWARD_FOR_ILLEGAL_ACTION;
+                            }
+                        }
+                    },
+                    Direction::Right => match &tmp_adj[1][2] {
+                        None => return REWARD_FOR_ILLEGAL_ACTION,
+                        Some(tile) => {
+                            if tile.content.to_default() != Content::Bank(0..0) {
+                                return REWARD_FOR_ILLEGAL_ACTION;
+                            }
+                        }
+                    },
+                    Direction::Down => match &tmp_adj[2][1] {
+                        None => return REWARD_FOR_ILLEGAL_ACTION,
+                        Some(tile) => {
+                            if tile.content.to_default() != Content::Bank(0..0) {
+                                return REWARD_FOR_ILLEGAL_ACTION;
+                            }
+                        }
+                    },
+                    Direction::Left => match &tmp_adj[1][0] {
+                        None => return REWARD_FOR_ILLEGAL_ACTION,
+                        Some(tile) => {
+                            if tile.content.to_default() != Content::Bank(0..0) {
+                                return REWARD_FOR_ILLEGAL_ACTION;
+                            }
+                        }
+                    },
+                }
                 let amount = *self
                     .get_backpack()
                     .get_contents()

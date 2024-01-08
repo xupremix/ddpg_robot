@@ -31,7 +31,7 @@ pub fn eval() {
             log_file
                 .write_all(
                     format!(
-                        "|{:_^11}|{:_^8}|{:_^12}|{:_^6}|{:_^12}|\n",
+                        "|{:_^11}|{:_^8}|{:_^12}|{:_^7}|{:_^12}|\n",
                         "Iteration", "Action", "Reward", "Done", "Acc. Reward"
                     )
                     .as_bytes(),
@@ -77,7 +77,7 @@ pub fn eval() {
 
                 // log to file
                 let log = format!(
-                    "|{:^11}|{:^8}|{:^12.3}|{:^6}|{:^12.3}|\n",
+                    "|{:^11}|{:^8}|{:^12.3}|{:^7}|{:^12.3}|\n",
                     i, action, step.reward, step.done, acc_rw
                 );
                 log_file.write_all(log.as_bytes()).unwrap();
