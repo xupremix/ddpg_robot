@@ -1,7 +1,7 @@
 use crate::gym::state::State;
 use crate::utils::consts::{
-    BASE_GO_REWARD, COEFFICIENT_X_COINS, LIM_F_COINS,
-    LOG_BASE_COINS, PERCENTAGE_ENERGY_RESERVED_FOR_SCANNING, REWARD_FOR_ILLEGAL_ACTION,
+    BASE_GO_REWARD, COEFFICIENT_X_COINS, LIM_F_COINS, LOG_BASE_COINS,
+    PERCENTAGE_ENERGY_RESERVED_FOR_SCANNING, REWARD_FOR_ILLEGAL_ACTION,
 };
 use crate::utils::functions::{reward_fn, scan_reward, update_closest, update_danger};
 use robotics_lib::energy::Energy;
@@ -97,7 +97,6 @@ impl GymRobot {
                     update_closest(self, world);
                     self.coins_destroyed += amt_dst;
                     if self.coins_destroyed >= self.coins_destroyed_goal {
-                        println!("Completed the coins destroyed task");
                         self.state.borrow_mut().done = true;
                         0.
                     } else if amt_dst == 0 {
@@ -125,7 +124,6 @@ impl GymRobot {
                     update_closest(self, world);
                     self.coins_stored += amt_put;
                     if self.coins_stored >= self.coins_stored_goal {
-                        println!("Completed the coins stored task");
                         self.state.borrow_mut().done = true;
                         0.
                     } else if amt_put == 0 {

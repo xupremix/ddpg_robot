@@ -118,6 +118,7 @@ pub fn train() {
                     // store the transition into the replay memory
                     agent.remember(&obs, &actions, &step.reward.into(), &step.obs);
                     if step.done {
+                        println!("T: {worker} completed the task");
                         break;
                     }
                     // update the observation
