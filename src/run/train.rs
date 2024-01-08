@@ -60,10 +60,26 @@ pub fn train() {
             let mut state_log_file =
                 File::create(format!("{}_{}.log", TRAIN_STATE, worker)).unwrap();
             log_file
-                .write_all(b"Iter | Action | Reward | Done | Acc_r\n")
+                .write_all(
+                    format!(
+                        "|{:_^11}|{:_^8}|{:_^12}|{:_^7}|{:_^12}|\n",
+                        "Iteration", "Action", "Reward", "Done", "Acc. Reward"
+                    )
+                    .as_bytes(),
+                )
                 .unwrap();
             state_log_file
-                .write_all(b"Danger | CoinDir | CoinAdj | BankDir | BankAdj\n")
+                .write_all(
+                    format!(
+                        "|{:_^22}|{:_^22}|{:_^22}|{:_^22}|{:_^22}|\n",
+                        "Danger",
+                        "Coin Direction",
+                        "Coin Adjacency",
+                        "Bank Direction",
+                        "Bank Adjacency"
+                    )
+                    .as_bytes(),
+                )
                 .unwrap();
 
             let mut log_data = vec![];
@@ -93,13 +109,13 @@ pub fn train() {
                     // remember the reward, min and max for plotting
 
                     let log = format!(
-                        "{} | {} | {:.4} | {} | {:.4}\n",
+                        "|{:^11}|{:^8}|{:^12.3}|{:^7}|{:^12.3}|\n",
                         i, action, step.reward, step.done, acc_rw
                     );
                     ep_log_data.push(log);
                     let state = env.state();
                     let state_log = format!(
-                        "{:?} | {:?} | {:?} | {:?} | {:?}\n",
+                        "| {:?} | {:?} | {:?} | {:?} | {:?} |\n",
                         state.danger,
                         state.coin_dir,
                         state.coin_adj,
