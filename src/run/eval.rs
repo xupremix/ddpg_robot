@@ -12,7 +12,7 @@ use worldgen_unwrap::public::WorldgeneratorUnwrap;
 
 pub fn eval() {
     let mut handles = vec![];
-    for worker in 0..N_WORKERS {
+    (0..N_WORKERS).for_each(|worker| {
         handles.push(spawn(move || {
             let generator = WorldgeneratorUnwrap::init(
                 false,
@@ -20,7 +20,7 @@ pub fn eval() {
             );
             let mut env = GymEnv::new(generator, COINS_DESTROYED_TARGET, COINS_STORED_TARGET);
             let mut model = CModule::load_on_device(
-                format!("{}_{}", MODEL_BASE, worker),
+                format!("{}_{}.pt", MODEL_BASE, worker),
                 Device::cuda_if_available(),
             )
             .unwrap();
@@ -86,7 +86,7 @@ pub fn eval() {
                 max_rw,
             );
         }));
-    }
+    });
     for handle in handles {
         handle.join().unwrap();
     }

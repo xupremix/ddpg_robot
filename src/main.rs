@@ -1,5 +1,5 @@
 use crate::run::{eval, init, load, train};
-use crate::utils::Mode;
+use std::env;
 
 mod gym;
 mod model;
@@ -7,11 +7,14 @@ mod run;
 mod utils;
 
 fn main() {
-    let mode = Mode::Train;
-    match mode {
-        Mode::Init => init(),
-        Mode::Train => train(),
-        Mode::TrainLoad => load(),
-        Mode::Eval => eval(),
+    match env::args().nth(1) {
+        None => println!("Missing mode"),
+        Some(mode) => match mode.as_str() {
+            "init" => init(),
+            "train" => train(),
+            "load" => load(),
+            "eval" => eval(),
+            _ => println!("Wrong mode provided: {}", mode),
+        },
     }
 }

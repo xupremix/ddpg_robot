@@ -30,6 +30,7 @@ impl Actor {
             observation_space as i64,
             action_space as i64,
             hidden_layers,
+            false,
         );
         Self {
             save_path,

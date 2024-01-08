@@ -7,17 +7,16 @@ use robotics_lib::runner::Runnable;
 use robotics_lib::utils::calculate_cost_go_with_environment;
 use robotics_lib::world::tile::{Content, Tile};
 use robotics_lib::world::World;
+use std::cmp::Ordering;
 use tch::nn::{linear, seq, Path, Sequential, VarStore};
 use tch::no_grad;
 
 use crate::gym::robot::GymRobot;
-use crate::utils::args::Mode;
-use crate::utils::args::Mode::{Eval, Train};
+use crate::model::Critic;
 use crate::utils::consts::{
     COEFFICIENT_X_SCAN, CONTENT_TARGETS, FONT_SIZE, LABEL_AREA_SIZE, LIM_F_SCAN, LOG_BASE_SCAN,
     PLOT_FONT, PLOT_HEIGHT, PLOT_WIDTH, RW_NO_SCAN, X_LABELS, Y_LABELS,
 };
-use crate::utils::{EvalParameters, TrainParameters};
 
 // weighted sum of two trainable variables
 pub fn update_vs(dst: &mut VarStore, src: &VarStore, tau: f64) {
@@ -88,29 +87,29 @@ pub fn update_closest(robot: &mut GymRobot, world: &mut World) {
 
     let update_coin_dir_fn =
         |i: usize, robot_i: usize, j: usize, robot_j: usize, robot: &mut GymRobot| {
-            if i < robot_i {
-                robot.state.borrow_mut().coin_dir[0] = 1.0;
-            } else if i > robot_i {
-                robot.state.borrow_mut().coin_dir[2] = 1.0;
+            match i.cmp(&robot_i) {
+                Ordering::Less => robot.state.borrow_mut().coin_dir[0] = 1.0,
+                Ordering::Greater => robot.state.borrow_mut().coin_dir[2] = 1.0,
+                _ => {}
             }
-            if j < robot_j {
-                robot.state.borrow_mut().coin_dir[3] = 1.0;
-            } else if j > robot_j {
-                robot.state.borrow_mut().coin_dir[1] = 1.0;
+            match j.cmp(&robot_j) {
+                Ordering::Less => robot.state.borrow_mut().coin_dir[3] = 1.0,
+                Ordering::Greater => robot.state.borrow_mut().coin_dir[1] = 1.0,
+                _ => {}
             }
         };
 
     let update_bank_dir_fn =
         |i: usize, robot_i: usize, j: usize, robot_j: usize, robot: &mut GymRobot| {
-            if i < robot_i {
-                robot.state.borrow_mut().bank_dir[0] = 1.0;
-            } else if i > robot_i {
-                robot.state.borrow_mut().bank_dir[2] = 1.0;
+            match i.cmp(&robot_i) {
+                Ordering::Less => robot.state.borrow_mut().bank_dir[0] = 1.0,
+                Ordering::Greater => robot.state.borrow_mut().bank_dir[2] = 1.0,
+                _ => {}
             }
-            if j < robot_j {
-                robot.state.borrow_mut().bank_dir[3] = 1.0;
-            } else if j > robot_j {
-                robot.state.borrow_mut().bank_dir[1] = 1.0;
+            match j.cmp(&robot_j) {
+                Ordering::Less => robot.state.borrow_mut().bank_dir[3] = 1.0,
+                Ordering::Greater => robot.state.borrow_mut().bank_dir[1] = 1.0,
+                _ => {}
             }
         };
 
@@ -299,11 +298,18 @@ pub fn create_network(
     observation_space: i64,
     action_space: i64,
     hidden_layers: &[i64],
+    critic: bool,
 ) -> Sequential {
     let mut network = seq()
         .add(linear(
             p / "in",
-            observation_space + action_space,
+            {
+                if critic {
+                    observation_space + action_space
+                } else {
+                    observation_space
+                }
+            },
             hidden_layers[0],
             Default::default(),
         ))
@@ -320,7 +326,13 @@ pub fn create_network(
     network.add(linear(
         p / "out",
         *hidden_layers.last().unwrap(),
-        1,
+        {
+            if critic {
+                1
+            } else {
+                action_space
+            }
+        },
         Default::default(),
     ))
 }

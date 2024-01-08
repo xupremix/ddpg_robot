@@ -28,8 +28,6 @@ pub const MAPS: [&str; 4] = [
     "coin_bank_adj_map.bin",
     "test_normal_map.bin",
 ];
-pub const TRAIN_BASE: &str = "src/save/train/train";
-pub const EVAL_BASE: &str = "src/save/eval/eval";
 pub const MODEL_BASE: &str = "src/save/models/model";
 pub const MAP_BASE: &str = "src/save/maps";
 pub const EVAL_LOG: &str = "src/save/eval/log";
@@ -41,7 +39,6 @@ pub const TRAIN_PLOT: &str = "src/save/train/plot";
 pub const EP: usize = 200;
 pub const MAX_EP: usize = 100;
 pub const BATCH: usize = 30;
-pub const TRAIN_N: usize = 100;
 pub const ACTOR_LAYERS: [i64; 2] = [1000, 600];
 pub const CRITIC_LAYERS: [i64; 2] = [1000, 600];
 pub const LR_A: f64 = 0.0001;

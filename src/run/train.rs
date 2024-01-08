@@ -14,7 +14,7 @@ use worldgen_unwrap::public::WorldgeneratorUnwrap;
 
 pub fn train() {
     let mut handles = vec![];
-    for worker in 0..N_WORKERS {
+    (0..N_WORKERS).for_each(|worker| {
         handles.push(spawn(move || {
             let generator = WorldgeneratorUnwrap::init(
                 false,
@@ -157,7 +157,7 @@ pub fn train() {
                 max_rw,
             );
         }));
-    }
+    });
     for handle in handles {
         handle.join().unwrap();
     }
